@@ -172,7 +172,7 @@
               :rules="[rules.required]"
               prepend-inner-icon="mdi-key"
               :error-messages="joinError"
-              @input="inviteCode = inviteCode.toUpperCase()"
+              @keyup.enter="handleJoin"
             />
           </v-card-text>
           <v-card-actions>
@@ -242,14 +242,18 @@ async function handleCreate() {
 }
 
 async function handleJoin() {
-  if (!inviteCode.value) return
+  const sanitizedCode = inviteCode.value.trim().toUpperCase()
+  if (!sanitizedCode) return
 
   joinError.value = ''
   try {
-    await joinTeam(inviteCode.value)
+    await joinTeam(sanitizedCode)
     showSnackbar?.('Je bent lid geworden van het team!', 'success')
     joinDialogOpen.value = false
     inviteCode.value = ''
+    
+    // Explicitly refetch teams to show the new one
+    await useTeams().refetch()
   } catch (error: any) {
     joinError.value = error.message || 'Ongeldige code'
   }

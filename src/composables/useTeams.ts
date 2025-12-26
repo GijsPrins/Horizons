@@ -99,7 +99,7 @@ export function useTeams() {
         .select('id')
         .eq('team_id', team.id)
         .eq('user_id', user.value.id)
-        .single()
+        .maybeSingle()
 
       if (existing) throw new Error('Je bent al lid van dit team')
 
