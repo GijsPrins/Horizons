@@ -151,6 +151,7 @@ const typeColor = computed(() => typeConfig[props.goal.goal_type as keyof typeof
 .goal-card__title {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;

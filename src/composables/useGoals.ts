@@ -94,9 +94,12 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
   // Update goal mutation
   const updateGoalMutation = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Goal> & { id: string }) => {
+      // Omit read-only fields that might be in updates
+      const { created_at, user_id, ...validUpdates } = updates as any
+
       const { data, error } = await supabase
         .from('goals')
-        .update(updates)
+        .update(validUpdates)
         .eq('id', id)
         .select()
         .single()

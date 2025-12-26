@@ -1,47 +1,64 @@
 // TypeScript type definitions for Horizons Database
+// Matching the Supabase schema structure for better type inference
 
-// ============================================
-// Database Types (matches Supabase schema)
-// ============================================
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: Omit<Profile, 'created_at'>
-        Update: Partial<Omit<Profile, 'id'>>
+        Insert: ProfileInsert
+        Update: ProfileUpdate
       }
       teams: {
         Row: Team
-        Insert: Omit<Team, 'id' | 'created_at'>
-        Update: Partial<Omit<Team, 'id'>>
+        Insert: TeamInsert
+        Update: TeamUpdate
       }
       team_members: {
         Row: TeamMember
-        Insert: Omit<TeamMember, 'id' | 'joined_at'>
-        Update: Partial<Omit<TeamMember, 'id'>>
+        Insert: TeamMemberInsert
+        Update: TeamMemberUpdate
       }
       categories: {
         Row: Category
-        Insert: Omit<Category, 'id' | 'created_at'>
-        Update: Partial<Omit<Category, 'id'>>
+        Insert: CategoryInsert
+        Update: CategoryUpdate
       }
       goals: {
         Row: Goal
-        Insert: Omit<Goal, 'id' | 'created_at'>
-        Update: Partial<Omit<Goal, 'id'>>
+        Insert: GoalInsert
+        Update: GoalUpdate
       }
       progress_entries: {
         Row: ProgressEntry
-        Insert: Omit<ProgressEntry, 'id' | 'created_at'>
-        Update: Partial<Omit<ProgressEntry, 'id'>>
+        Insert: ProgressEntryInsert
+        Update: ProgressEntryUpdate
       }
       attachments: {
         Row: Attachment
-        Insert: Omit<Attachment, 'id' | 'created_at'>
-        Update: Partial<Omit<Attachment, 'id'>>
+        Insert: AttachmentInsert
+        Update: AttachmentUpdate
       }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }
@@ -58,6 +75,9 @@ export interface Profile {
   created_at: string
 }
 
+export type ProfileInsert = Omit<Profile, 'created_at'>
+export type ProfileUpdate = Partial<Omit<Profile, 'id' | 'created_at'>>
+
 export interface Team {
   id: string
   name: string
@@ -66,6 +86,9 @@ export interface Team {
   created_at: string
 }
 
+export type TeamInsert = Omit<Team, 'id' | 'created_at'>
+export type TeamUpdate = Partial<Omit<Team, 'id' | 'created_at'>>
+
 export interface TeamMember {
   id: string
   team_id: string
@@ -73,6 +96,9 @@ export interface TeamMember {
   role: 'admin' | 'member'
   joined_at: string
 }
+
+export type TeamMemberInsert = Omit<TeamMember, 'id' | 'joined_at'>
+export type TeamMemberUpdate = Partial<Omit<TeamMember, 'id' | 'joined_at'>>
 
 export interface Category {
   id: string
@@ -83,6 +109,9 @@ export interface Category {
   sort_order: number
   created_at: string
 }
+
+export type CategoryInsert = Omit<Category, 'id' | 'created_at'>
+export type CategoryUpdate = Partial<Omit<Category, 'id' | 'created_at'>>
 
 export type GoalType = 'single' | 'weekly' | 'milestone'
 
@@ -102,6 +131,9 @@ export interface Goal {
   created_at: string
 }
 
+export type GoalInsert = Omit<Goal, 'id' | 'created_at'>
+export type GoalUpdate = Partial<Omit<Goal, 'id' | 'created_at'>>
+
 export interface ProgressEntry {
   id: string
   goal_id: string
@@ -111,6 +143,9 @@ export interface ProgressEntry {
   achieved: boolean
   created_at: string
 }
+
+export type ProgressEntryInsert = Omit<ProgressEntry, 'id' | 'created_at'>
+export type ProgressEntryUpdate = Partial<Omit<ProgressEntry, 'id' | 'created_at'>>
 
 export type AttachmentType = 'url' | 'image' | 'note' | 'milestone'
 
@@ -124,6 +159,9 @@ export interface Attachment {
   milestone_date: string | null
   created_at: string
 }
+
+export type AttachmentInsert = Omit<Attachment, 'id' | 'created_at'>
+export type AttachmentUpdate = Partial<Omit<Attachment, 'id' | 'created_at'>>
 
 // ============================================
 // Extended Types (with relations)
@@ -150,7 +188,7 @@ export interface CategoryWithCount extends Category {
 
 export interface GoalFormData {
   title: string
-  description: string
+  description: string | null
   year: number
   category_id: string | null
   goal_type: GoalType
@@ -160,7 +198,7 @@ export interface GoalFormData {
 
 export interface TeamFormData {
   name: string
-  description: string
+  description: string | null
 }
 
 export interface CategoryFormData {

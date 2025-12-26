@@ -33,7 +33,7 @@ export function useAuth() {
       }
 
       // Listen for auth changes
-      supabase.auth.onAuthStateChange(async (event, newSession) => {
+      supabase.auth.onAuthStateChange(async (event: any, newSession: any) => {
         session.value = newSession
         user.value = newSession?.user ?? null
 
@@ -157,9 +157,11 @@ export function useAuth() {
 
     loading.value = true
     try {
+      const { id, created_at, ...validUpdates } = updates
+
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(validUpdates)
         .eq('id', user.value.id)
 
       if (error) throw error
