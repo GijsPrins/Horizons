@@ -10,7 +10,7 @@
       <v-app-bar-title class="pointer" @click="$router.push({ name: 'dashboard' })">
         <div class="d-flex align-center">
           <v-avatar size="28" class="mr-2 border">
-            <v-img src="favicon.png" contain />
+            <v-img :src="logoPath" contain />
           </v-avatar>
           <span class="font-weight-bold title-text">Horizons</span>
         </div>
@@ -132,6 +132,8 @@ import { useAuth } from '@/composables/useAuth'
 const { isAuthenticated, isAdmin, profile, logout } = useAuth()
 const route = useRoute()
 const { mobile } = useDisplay()
+
+const logoPath = `${import.meta.env.BASE_URL}favicon.png`
 
 const drawer = ref(!mobile.value)
 const rail = ref(false)
