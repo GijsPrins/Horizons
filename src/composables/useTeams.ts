@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { supabase } from '@/plugins/supabase'
-import type { Team, TeamWithMembers, TeamFormData, TeamMember } from '@/types/database'
+import type { TeamWithMembers, TeamFormData } from '@/types/database'
 import { useAuth } from './useAuth'
 
 export function useTeams() {
