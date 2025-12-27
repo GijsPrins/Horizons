@@ -3,10 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { supabase } from '@/plugins/supabase'
 import type { GoalWithRelations, GoalFormData } from '@/types/database'
 import { useAuth } from './useAuth'
+import { useAttachments } from './useAttachments'
 
 export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: MaybeRefOrGetter<number | undefined>) {
   const queryClient = useQueryClient()
   const { user } = useAuth()
+  const { uploadFile } = useAttachments()
 
   const resolvedYear = computed(() => toValue(year) ?? new Date().getFullYear())
   const resolvedTeamId = computed(() => toValue(teamId))
@@ -65,7 +67,6 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
     },
     enabled: computed(() => !!resolvedTeamId.value && !!user.value)
   })
-
   // Create goal mutation
   const createGoalMutation = useMutation({
     mutationFn: async (formData: GoalFormData & { team_id: string }) => {
@@ -88,31 +89,14 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
 
       if (error) throw error
 
-      // 2. If there's a file, upload it and create an attachment record
+      // 2. If there's a file, upload it using the shared logic
       if (file && goal) {
         try {
-          const fileExt = file.name.split('.').pop()
-          const fileName = `${Math.random()}.${fileExt}`
-          const filePath = `${goal.id}/${fileName}`
-
-          const { error: uploadError } = await supabase.storage
-            .from('attachments')
-            .upload(filePath, file)
-
-          if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('attachments')
-              .getPublicUrl(filePath)
-
-            await supabase
-              .from('attachments')
-              .insert({
-                goal_id: goal.id,
-                title: file.name,
-                type: 'image',
-                url: publicUrl
-              })
-          }
+          await uploadFile({
+            goal_id: goal.id,
+            file: file,
+            title: file.name
+          })
         } catch (uploadErr) {
           console.error('Initial file upload failed:', uploadErr)
           // We don't fail the goal creation if only the attachment fails
@@ -142,31 +126,14 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
 
       if (error) throw error
 
-      // If there's a file, upload it as a new attachment
+      // If there's a file, upload it using the shared logic
       if (file && goal) {
         try {
-          const fileExt = file.name.split('.').pop()
-          const fileName = `${Math.random()}.${fileExt}`
-          const filePath = `${goal.id}/${fileName}`
-
-          const { error: uploadError } = await supabase.storage
-            .from('attachments')
-            .upload(filePath, file)
-
-          if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('attachments')
-              .getPublicUrl(filePath)
-
-            await supabase
-              .from('attachments')
-              .insert({
-                goal_id: goal.id,
-                title: file.name,
-                type: 'image',
-                url: publicUrl
-              })
-          }
+          await uploadFile({
+            goal_id: goal.id,
+            file: file,
+            title: file.name
+          })
         } catch (uploadErr) {
           console.error('File upload during update failed:', uploadErr)
         }

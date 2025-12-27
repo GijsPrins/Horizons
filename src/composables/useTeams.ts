@@ -48,9 +48,11 @@ export function useTeams() {
   // Generate unique invite code
   function generateInviteCode(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Avoid confusing chars
+    const array = new Uint8Array(8)
+    crypto.getRandomValues(array)
     let code = ''
-    for (let i = 0; i < 8; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length))
+    for (const val of array) {
+      code += chars.charAt(val % chars.length)
     }
     return code
   }

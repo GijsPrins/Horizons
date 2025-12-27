@@ -12,7 +12,14 @@ export function useAttachments() {
     mutationFn: async (formData: AttachmentFormData & { goal_id: string }) => {
       const { data, error } = await supabase
         .from('attachments')
-        .insert(formData as any) // Use any to bypass strict Postgrest types for now
+        .insert({
+          goal_id: formData.goal_id,
+          type: formData.type,
+          title: formData.title ?? null,
+          url: formData.url ?? null,
+          content: formData.content ?? null,
+          milestone_date: formData.milestone_date ?? null
+        }) 
         .select()
         .single()
 
@@ -28,9 +35,16 @@ export function useAttachments() {
   // Upload file to Supabase Storage and then add attachment record
   const uploadFileMutation = useMutation({
     mutationFn: async ({ file, goal_id, title }: { file: File; goal_id: string; title: string }) => {
-      // 1. Upload to storage
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Math.random()}.${fileExt}`
+      // 1. Validate file extension
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp']
+      const fileExt = file.name.split('.').pop()?.toLowerCase()
+      
+      if (!fileExt || !allowedExtensions.includes(fileExt)) {
+        throw new Error('Alleen afbeeldingen (jpg, png, gif, webp) zijn toegestaan.')
+      }
+
+      // 2. Upload to storage
+      const fileName = `${crypto.randomUUID()}.${fileExt}`
       const filePath = `${goal_id}/${fileName}`
 
       const { error: uploadError } = await supabase.storage
@@ -39,12 +53,12 @@ export function useAttachments() {
 
       if (uploadError) throw uploadError
 
-      // 2. Get public URL
+      // 3. Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('attachments')
         .getPublicUrl(filePath)
 
-      // 3. Add record to database
+      // 4. Add record to database
       return addAttachmentMutation.mutateAsync({
         goal_id,
         title,

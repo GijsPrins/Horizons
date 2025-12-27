@@ -18,9 +18,9 @@ export function useProgress() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
-      queryClient.invalidateQueries({ queryKey: ['goal'] })
+      queryClient.invalidateQueries({ queryKey: ['goal', data.goal_id] })
     }
   })
 
@@ -37,25 +37,37 @@ export function useProgress() {
       if (error) throw error
       return data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
-      queryClient.invalidateQueries({ queryKey: ['goal'] })
+      queryClient.invalidateQueries({ queryKey: ['goal', data.goal_id] })
     }
   })
 
   // Delete progress entry mutation
   const deleteProgressMutation = useMutation({
     mutationFn: async (entryId: string) => {
+      // Get the entry first to know the goal_id
+      const { data: entry } = await supabase
+        .from('progress_entries')
+        .select('goal_id')
+        .eq('id', entryId)
+        .single()
+
+      if (!entry) return null
+
       const { error } = await supabase
         .from('progress_entries')
         .delete()
         .eq('id', entryId)
 
       if (error) throw error
+      return (entry as ProgressEntry).goal_id
     },
-    onSuccess: () => {
+    onSuccess: (goalId) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
-      queryClient.invalidateQueries({ queryKey: ['goal'] })
+      if (goalId) {
+        queryClient.invalidateQueries({ queryKey: ['goal', goalId] })
+      }
     }
   })
 
@@ -107,9 +119,9 @@ export function useProgress() {
         return data
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
-      queryClient.invalidateQueries({ queryKey: ['goal'] })
+      queryClient.invalidateQueries({ queryKey: ['goal', data.goal_id] })
     }
   })
 

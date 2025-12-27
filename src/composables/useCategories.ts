@@ -2,6 +2,7 @@ import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { supabase } from '@/plugins/supabase'
 import type { Category, CategoryFormData } from '@/types/database'
+import { DEFAULT_CATEGORIES } from '@/constants/branding'
 
 export function useCategories(teamId?: MaybeRefOrGetter<string | undefined>) {
   const queryClient = useQueryClient()
@@ -122,14 +123,5 @@ export function useCategories(teamId?: MaybeRefOrGetter<string | undefined>) {
   }
 }
 
-// Default categories to seed
-export const defaultCategories: Omit<CategoryFormData, 'sort_order'>[] = [
-  { name: 'Carrière', color: '#F44336', icon: 'mdi-briefcase' }, // Red (C)
-  { name: 'Creatief', color: '#FF9800', icon: 'mdi-palette' }, // Orange (C)
-  { name: 'Financieel', color: '#FFEB3B', icon: 'mdi-currency-eur' }, // Yellow (F)
-  { name: 'Gezondheid', color: '#4CAF50', icon: 'mdi-heart-pulse' }, // Green (G)
-  { name: 'Overig', color: '#2196F3', icon: 'mdi-dots-horizontal' }, // Blue (O)
-  { name: 'Persoonlijk', color: '#3F51B5', icon: 'mdi-account' }, // Indigo (P)
-  { name: 'Relatie', color: '#9C27B0', icon: 'mdi-heart' }, // Violet (R)
-  { name: 'Sport', color: '#E91E63', icon: 'mdi-run' }, // Pink (S)
-]
+// Default categories to seed (moved to @/constants/branding.ts)
+export const defaultCategories = DEFAULT_CATEGORIES

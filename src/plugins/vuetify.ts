@@ -3,6 +3,7 @@ import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
 import { createVuetify } from 'vuetify'
 import { nl } from 'vuetify/locale'
+import { BRAND_COLORS, CATEGORY_COLORS, CATEGORY_COLORS_DARK } from '@/constants/branding'
 
 export default createVuetify({
   locale: {
@@ -15,28 +16,23 @@ export default createVuetify({
     themes: {
       light: {
         colors: {
-          primary: '#6366F1',      // Indigo
-          secondary: '#EC4899',    // Pink
-          accent: '#8B5CF6',       // Purple
-          success: '#10B981',      // Emerald
-          warning: '#F59E0B',      // Amber
-          error: '#EF4444',        // Red
-          info: '#3B82F6',         // Blue
+          ...BRAND_COLORS,
           background: '#F8FAFC',   // Slate 50
           surface: '#FFFFFF',
           // Category colors
-          'cat-gezondheid': '#4CAF50',
-          'cat-persoonlijk': '#2196F3',
-          'cat-relatie': '#E91E63',
-          'cat-carriere': '#FF9800',
-          'cat-financieel': '#FFC107',
-          'cat-creatief': '#9C27B0',
-          'cat-sport': '#00BCD4',
-          'cat-overig': '#607D8B',
+          'cat-gezondheid': CATEGORY_COLORS.gezondheid,
+          'cat-persoonlijk': CATEGORY_COLORS.persoonlijk,
+          'cat-relatie': CATEGORY_COLORS.relatie,
+          'cat-carriere': CATEGORY_COLORS.carriere,
+          'cat-financieel': CATEGORY_COLORS.financieel,
+          'cat-creatief': CATEGORY_COLORS.creatief,
+          'cat-sport': CATEGORY_COLORS.sport,
+          'cat-overig': CATEGORY_COLORS.overig,
         }
       },
       dark: {
         colors: {
+          // Darker/Brighter variants for dark mode if needed, otherwise same branding
           primary: '#818CF8',      // Indigo 400
           secondary: '#F472B6',    // Pink 400
           accent: '#A78BFA',       // Purple 400
@@ -47,14 +43,14 @@ export default createVuetify({
           background: '#0F172A',   // Slate 900
           surface: '#1E293B',      // Slate 800
           // Category colors (brighter for dark mode)
-          'cat-gezondheid': '#4ADE80',
-          'cat-persoonlijk': '#38BDF8',
-          'cat-relatie': '#FB7185',
-          'cat-carriere': '#FB923C',
-          'cat-financieel': '#FACC15',
-          'cat-creatief': '#C084FC',
-          'cat-sport': '#22D3EE',
-          'cat-overig': '#94A3B8',
+          'cat-gezondheid': CATEGORY_COLORS_DARK.gezondheid,
+          'cat-persoonlijk': CATEGORY_COLORS_DARK.persoonlijk,
+          'cat-relatie': CATEGORY_COLORS_DARK.relatie,
+          'cat-carriere': CATEGORY_COLORS_DARK.carriere,
+          'cat-financieel': CATEGORY_COLORS_DARK.financieel,
+          'cat-creatief': CATEGORY_COLORS_DARK.creatief,
+          'cat-sport': CATEGORY_COLORS_DARK.sport,
+          'cat-overig': CATEGORY_COLORS_DARK.overig,
         }
       }
     }
