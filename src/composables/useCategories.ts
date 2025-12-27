@@ -3,10 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { supabase } from '@/plugins/supabase'
 import type { Category, CategoryFormData } from '@/types/database'
 import { DEFAULT_CATEGORIES } from '@/constants/branding'
+import { useAuth } from './useAuth'
 
 export function useCategories(teamId?: MaybeRefOrGetter<string | undefined>) {
   const queryClient = useQueryClient()
   const resolvedTeamId = computed(() => toValue(teamId))
+  const { verifyAdminStatus } = useAuth()
 
   // Fetch all categories (global + team-specific)
   const categoriesQuery = useQuery({
@@ -70,15 +72,39 @@ export function useCategories(teamId?: MaybeRefOrGetter<string | undefined>) {
   // Update category mutation
   const updateCategoryMutation = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Category> & { id: string }) => {
-      const { data, error } = await supabase
-        .from('categories')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single()
+      // Check if this is a global category (team_id is null)
+      const category = categoriesQuery.data.value?.find(c => c.id === id)
+      const isGlobal = category?.team_id === null
 
-      if (error) throw error
-      return data
+      if (isGlobal) {
+        // Use secure RPC function for global categories
+        const isAdmin = await verifyAdminStatus()
+        if (!isAdmin) {
+          throw new Error('Only app admins can update global categories')
+        }
+
+        const { data, error } = await supabase.rpc('update_global_category', {
+          category_id: id,
+          new_name: updates.name ?? null,
+          new_color: updates.color ?? null,
+          new_icon: updates.icon ?? null,
+          new_sort_order: updates.sort_order ?? null
+        })
+
+        if (error) throw error
+        return data
+      } else {
+        // Regular update for team categories (RLS handles permission)
+        const { data, error } = await supabase
+          .from('categories')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single()
+
+        if (error) throw error
+        return data
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
@@ -88,12 +114,32 @@ export function useCategories(teamId?: MaybeRefOrGetter<string | undefined>) {
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
     mutationFn: async (categoryId: string) => {
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', categoryId)
+      // Check if this is a global category
+      const category = categoriesQuery.data.value?.find(c => c.id === categoryId)
+      const isGlobal = category?.team_id === null
 
-      if (error) throw error
+      if (isGlobal) {
+        // Use secure RPC function for global categories
+        const isAdmin = await verifyAdminStatus()
+        if (!isAdmin) {
+          throw new Error('Only app admins can delete global categories')
+        }
+
+        const { data, error } = await supabase.rpc('delete_global_category', {
+          category_id: categoryId
+        })
+
+        if (error) throw error
+        return data
+      } else {
+        // Regular delete for team categories (RLS handles permission)
+        const { error } = await supabase
+          .from('categories')
+          .delete()
+          .eq('id', categoryId)
+
+        if (error) throw error
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })

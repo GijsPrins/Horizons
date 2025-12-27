@@ -10,6 +10,7 @@ const session = ref<Session | null>(null)
 const profile = ref<Profile | null>(null)
 const loading = ref(true)
 const initialized = ref(false)
+let authSubscription: { data: { subscription: { unsubscribe: () => void } } } | null = null
 
 export function useAuth() {
   const router = useRouter()
@@ -32,8 +33,8 @@ export function useAuth() {
         await fetchProfile(currentSession.user.id)
       }
 
-      // Listen for auth changes
-      supabase.auth.onAuthStateChange(async (event: any, newSession: any) => {
+      // Listen for auth changes and store subscription for cleanup
+      authSubscription = supabase.auth.onAuthStateChange(async (event: any, newSession: any) => {
         session.value = newSession
         user.value = newSession?.user ?? null
 
@@ -47,6 +48,14 @@ export function useAuth() {
       initialized.value = true
     } finally {
       loading.value = false
+    }
+  }
+
+  // Cleanup auth subscription
+  function cleanup() {
+    if (authSubscription) {
+      authSubscription.data.subscription.unsubscribe()
+      authSubscription = null
     }
   }
 
@@ -64,6 +73,27 @@ export function useAuth() {
     }
 
     profile.value = data
+  }
+
+  // Verify admin status server-side (for critical operations)
+  async function verifyAdminStatus(): Promise<boolean> {
+    if (!user.value) return false
+
+    try {
+      const { data, error } = await supabase.rpc('is_app_admin', {
+        user_id: user.value.id
+      })
+
+      if (error) {
+        console.error('Error verifying admin status:', error)
+        return false
+      }
+
+      return data === true
+    } catch (error) {
+      console.error('Error calling is_app_admin:', error)
+      return false
+    }
   }
 
   // Login with email/password
@@ -223,6 +253,8 @@ export function useAuth() {
     isAuthenticated,
     isAdmin,
     initialize,
+    cleanup,
+    verifyAdminStatus,
     login,
     register,
     logout,
