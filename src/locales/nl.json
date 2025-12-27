@@ -96,7 +96,9 @@
       "shared": "Gedeelde doelen",
       "completed": "Voltooid"
     },
-    "created": "Doel {title} aangemaakt!"
+    "created": "Doel {title} aangemaakt!",
+    "copyToNextYear": "Kopieer naar volgend jaar",
+    "copiedToNextYear": "Doel gekopieerd naar {year}!"
   },
   "progress": {
     "title": "Voortgang",

@@ -30,6 +30,14 @@
               </template>
               <v-list-item-title>{{ $t("common.edit") }}</v-list-item-title>
             </v-list-item>
+            <v-list-item @click="onCopyToNextYear">
+              <template #prepend>
+                <v-icon>mdi-content-copy</v-icon>
+              </template>
+              <v-list-item-title>{{
+                $t("goals.copyToNextYear")
+              }}</v-list-item-title>
+            </v-list-item>
             <v-list-item @click="confirmDelete = true">
               <template #prepend>
                 <v-icon color="error">mdi-delete</v-icon>
@@ -390,6 +398,7 @@ const {
   handleGoalSubmit,
   handleAddAttachment,
   deleteAttachment,
+  handleCopyToNextYear,
 } = useGoalViewLogic(showSnackbar);
 
 const isOwner = computed(() => goal.value?.user_id === user.value?.id);
@@ -434,4 +443,5 @@ const onToggleMilestone = (id: string, achieved: boolean) =>
 const onUpdateMilestone = (id: string, note: string) =>
   updateMilestone(id, note, refetch);
 const onDeleteMilestone = (id: string) => deleteMilestone(id, refetch);
+const onCopyToNextYear = () => goal.value && handleCopyToNextYear(goal.value);
 </script>
