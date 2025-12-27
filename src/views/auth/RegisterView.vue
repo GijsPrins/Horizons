@@ -5,7 +5,9 @@
         <v-card class="pa-4" elevation="0" border>
           <!-- Logo -->
           <div class="text-center mb-6">
-            <v-icon size="64" color="primary">mdi-compass-outline</v-icon>
+            <v-avatar size="80" class="mb-2 border">
+              <v-img :src="logoPath" contain />
+            </v-avatar>
             <h1 class="text-h4 font-weight-bold mt-2">Horizons</h1>
             <p class="text-body-2 text-medium-emphasis">
               Maak een account aan
@@ -104,6 +106,8 @@ import { useAuth } from '@/composables/useAuth'
 const router = useRouter()
 const { register, loading } = useAuth()
 const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
+
+const logoPath = `${import.meta.env.BASE_URL}favicon.png`
 
 const formRef = ref()
 const displayName = ref('')

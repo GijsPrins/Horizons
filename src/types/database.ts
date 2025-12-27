@@ -194,6 +194,7 @@ export interface GoalFormData {
   goal_type: GoalType
   target_count: number | null
   is_shared: boolean
+  file?: File | null
 }
 
 export interface TeamFormData {

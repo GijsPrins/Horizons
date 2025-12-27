@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { supabase } from '@/plugins/supabase'
-import type { Goal, GoalWithRelations, GoalFormData } from '@/types/database'
+import type { GoalWithRelations, GoalFormData } from '@/types/database'
 import { useAuth } from './useAuth'
 
 export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: MaybeRefOrGetter<number | undefined>) {
@@ -71,10 +71,13 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
     mutationFn: async (formData: GoalFormData & { team_id: string }) => {
       if (!user.value) throw new Error('Not authenticated')
 
-      const { data, error } = await supabase
+      const { file, ...goalData } = formData
+
+      // 1. Create the goal
+      const { data: goal, error } = await supabase
         .from('goals')
         .insert({
-          ...formData,
+          ...goalData,
           user_id: user.value.id,
           year: resolvedYear.value,
           is_completed: false,
@@ -84,7 +87,39 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
         .single()
 
       if (error) throw error
-      return data
+
+      // 2. If there's a file, upload it and create an attachment record
+      if (file && goal) {
+        try {
+          const fileExt = file.name.split('.').pop()
+          const fileName = `${Math.random()}.${fileExt}`
+          const filePath = `${goal.id}/${fileName}`
+
+          const { error: uploadError } = await supabase.storage
+            .from('attachments')
+            .upload(filePath, file)
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('attachments')
+              .getPublicUrl(filePath)
+
+            await supabase
+              .from('attachments')
+              .insert({
+                goal_id: goal.id,
+                title: file.name,
+                type: 'image',
+                url: publicUrl
+              })
+          }
+        } catch (uploadErr) {
+          console.error('Initial file upload failed:', uploadErr)
+          // We don't fail the goal creation if only the attachment fails
+        }
+      }
+
+      return goal
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
@@ -93,11 +128,12 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
 
   // Update goal mutation
   const updateGoalMutation = useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Goal> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: Partial<GoalFormData> & { id: string }) => {
+      const { file, ...goalUpdates } = updates as any
       // Omit read-only fields that might be in updates
-      const { created_at, user_id, ...validUpdates } = updates as any
+      const { created_at, user_id, ...validUpdates } = goalUpdates
 
-      const { data, error } = await supabase
+      const { data: goal, error } = await supabase
         .from('goals')
         .update(validUpdates)
         .eq('id', id)
@@ -105,11 +141,42 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
         .single()
 
       if (error) throw error
-      return data
+
+      // If there's a file, upload it as a new attachment
+      if (file && goal) {
+        try {
+          const fileExt = file.name.split('.').pop()
+          const fileName = `${Math.random()}.${fileExt}`
+          const filePath = `${goal.id}/${fileName}`
+
+          const { error: uploadError } = await supabase.storage
+            .from('attachments')
+            .upload(filePath, file)
+
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('attachments')
+              .getPublicUrl(filePath)
+
+            await supabase
+              .from('attachments')
+              .insert({
+                goal_id: goal.id,
+                title: file.name,
+                type: 'image',
+                url: publicUrl
+              })
+          }
+        } catch (uploadErr) {
+          console.error('File upload during update failed:', uploadErr)
+        }
+      }
+
+      return goal
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goals'] })
-      queryClient.invalidateQueries({ queryKey: ['goal', data.id] })
+      queryClient.invalidateQueries({ queryKey: ['goal', data?.id] })
     }
   })
 

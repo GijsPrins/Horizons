@@ -15,16 +15,28 @@ export function useTeams() {
     queryFn: async (): Promise<TeamWithMembers[]> => {
       if (!user.value) return []
 
+      // Step 1: Get the IDs of all teams the user belongs to
+      const { data: membershipData, error: membershipError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.value.id)
+
+      if (membershipError) throw membershipError
+      if (!membershipData?.length) return []
+
+      const teamIds = membershipData.map((m: any) => m.team_id)
+
+      // Step 2: Fetch full details for those teams, including ALL members
       const { data, error } = await supabase
         .from('teams')
         .select(`
           *,
-          team_members!inner(
+          team_members(
             *,
             profile:profiles(*)
           )
         `)
-        .eq('team_members.user_id', user.value.id)
+        .in('id', teamIds)
         .order('created_at', { ascending: false })
 
       if (error) throw error

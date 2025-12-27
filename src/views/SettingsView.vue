@@ -13,18 +13,45 @@
             </v-card-title>
             <v-card-text>
               <v-form ref="formRef">
+                <div class="d-flex align-center mb-6">
+                  <v-avatar size="80" color="primary" class="mr-4">
+                    <v-img v-if="profile?.avatar_url" :src="profile.avatar_url" />
+                    <span v-else class="text-h4 text-white">
+                      {{ profile?.display_name?.charAt(0)?.toUpperCase() }}
+                    </span>
+                  </v-avatar>
+                  <div>
+                    <v-file-input
+                      v-model="avatarFile"
+                      label="Profielfoto uploaden"
+                      prepend-icon="mdi-camera"
+                      accept="image/*"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                      class="mb-2"
+                      @update:model-value="handleAvatarUpload"
+                    />
+                    <div class="text-caption text-medium-emphasis">
+                      Max 2MB. JPG, PNG of GIF.
+                    </div>
+                  </div>
+                </div>
+
                 <v-text-field
                   v-model="form.display_name"
                   label="Weergavenaam"
                   :rules="[rules.required]"
+                  variant="outlined"
                   class="mb-2"
                 />
 
                 <v-text-field
                   v-model="form.avatar_url"
-                  label="Avatar URL (optioneel)"
+                  label="Avatar URL (handmatig)"
                   placeholder="https://..."
-                  hint="Plak een URL naar je profielfoto"
+                  variant="outlined"
+                  hint="Je kunt ook handmatig een URL opgeven"
                   persistent-hint
                   class="mb-4"
                 />
@@ -32,9 +59,10 @@
                 <v-btn
                   color="primary"
                   :loading="isSaving"
+                  block
                   @click="saveProfile"
                 >
-                  Opslaan
+                  Basisgegevens Opslaan
                 </v-btn>
               </v-form>
             </v-card-text>
@@ -107,17 +135,37 @@ import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { useAuth } from '@/composables/useAuth'
 
 const theme = useTheme()
-const { user, profile, isAdmin, updateProfile } = useAuth()
+const { user, profile, isAdmin, updateProfile, uploadAvatar } = useAuth()
 const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
 
 const formRef = ref()
 const isSaving = ref(false)
 const themeMode = ref(theme.global.name.value)
+const avatarFile = ref<File | null>(null)
 
 const form = reactive({
   display_name: '',
   avatar_url: ''
 })
+
+async function handleAvatarUpload(file: any) {
+  // Vuetify file input can return an array or single file depending on props
+  const targetFile = Array.isArray(file) ? file[0] : file
+  if (!targetFile) return
+
+  isSaving.value = true
+  try {
+    const result = await uploadAvatar(targetFile)
+    if (result.success) {
+      showSnackbar?.('Profielfoto geüpload!', 'success')
+      avatarFile.value = null
+    } else {
+      showSnackbar?.(result.error || 'Upload mislukt', 'error')
+    }
+  } finally {
+    isSaving.value = false
+  }
+}
 
 const rules = {
   required: (v: string) => !!v || 'Dit veld is verplicht'
@@ -140,8 +188,9 @@ function formatDate(dateString?: string) {
   })
 }
 
-function setTheme(mode: string) {
+function setTheme(mode: any) {
   theme.global.name.value = mode
+  localStorage.setItem('horizons-theme', mode)
 }
 
 async function saveProfile() {

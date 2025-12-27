@@ -179,6 +179,40 @@ export function useAuth() {
     }
   }
 
+  // Create a bucket for profiles if it doesn't exist (can also be done in SQL)
+  async function uploadAvatar(file: File) {
+    if (!user.value) return { success: false, error: 'Not authenticated' }
+
+    loading.value = true
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.value.id}.${fileExt}`
+      const filePath = `avatars/${fileName}`
+
+      // Upload to 'attachments' bucket (or 'profiles' if you prefer to create one)
+      const { error: uploadError } = await supabase.storage
+        .from('attachments')
+        .upload(filePath, file, {
+          upsert: true
+        })
+
+      if (uploadError) throw uploadError
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('attachments')
+        .getPublicUrl(filePath)
+
+      // Update profile with new URL
+      const result = await updateProfile({ avatar_url: publicUrl })
+      return result
+    } catch (error: any) {
+      return { success: false, error: error.message }
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     user,
     session,
@@ -191,6 +225,7 @@ export function useAuth() {
     register,
     logout,
     updateProfile,
+    uploadAvatar,
     fetchProfile
   }
 }

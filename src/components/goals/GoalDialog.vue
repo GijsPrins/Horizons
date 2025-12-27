@@ -118,8 +118,23 @@
             hint="Als dit aan staat, kunnen teamleden dit doel zien"
             persistent-hint
             color="primary"
-            class="mb-2"
+            class="mb-4"
           />
+
+          <!-- Optional Initial Image -->
+          <div class="mt-4">
+            <h4 class="text-subtitle-2 mb-2">Afbeelding toevoegen (optioneel)</h4>
+            <v-file-input
+              v-model="form.file"
+              label="Kies een foto"
+              prepend-icon="mdi-camera"
+              accept="image/*"
+              variant="outlined"
+              density="compact"
+              hint="Deze wordt als eerste bijlage toegevoegd"
+              persistent-hint
+            />
+          </div>
         </v-form>
       </v-card-text>
 
@@ -173,7 +188,8 @@ const form = reactive<GoalFormData>({
   category_id: null,
   goal_type: 'single',
   target_count: null,
-  is_shared: false
+  is_shared: false,
+  file: null
 })
 
 const yearOptions = computed(() => {
@@ -226,6 +242,7 @@ watch(() => props.modelValue, (open) => {
       form.goal_type = props.goal.goal_type
       form.target_count = props.goal.target_count
       form.is_shared = props.goal.is_shared
+      form.file = null
     } else {
       // New goal - reset form
       form.title = ''
@@ -235,6 +252,7 @@ watch(() => props.modelValue, (open) => {
       form.goal_type = 'single'
       form.target_count = null
       form.is_shared = false
+      form.file = null
     }
   }
 })

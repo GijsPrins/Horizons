@@ -11,7 +11,7 @@ export default createVuetify({
     messages: { nl }
   },
   theme: {
-    defaultTheme: 'dark',
+    defaultTheme: localStorage.getItem('horizons-theme') || 'dark',
     themes: {
       light: {
         colors: {
