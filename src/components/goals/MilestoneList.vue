@@ -20,7 +20,10 @@
           />
         </template>
 
-        <div v-if="editingId === entry.id" class="d-flex align-center flex-grow-1">
+        <div
+          v-if="editingId === entry.id"
+          class="d-flex align-center flex-grow-1"
+        >
           <v-text-field
             v-model="editNote"
             density="compact"
@@ -30,12 +33,28 @@
             @keyup.enter="saveEdit(entry.id)"
             @keyup.esc="cancelEdit"
           />
-          <v-btn icon="mdi-check" variant="text" size="small" color="success" @click="saveEdit(entry.id)" />
-          <v-btn icon="mdi-close" variant="text" size="small" @click="cancelEdit" />
+          <v-btn
+            icon="mdi-check"
+            variant="text"
+            size="small"
+            color="success"
+            @click="saveEdit(entry.id)"
+          />
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            size="small"
+            @click="cancelEdit"
+          />
         </div>
 
-        <v-list-item-title v-else :class="{ 'text-decoration-line-through text-medium-emphasis': entry.achieved }">
-          {{ entry.note || `${$t('attachments.milestone')} ${index + 1}` }}
+        <v-list-item-title
+          v-else
+          :class="{
+            'text-decoration-line-through text-medium-emphasis': entry.achieved,
+          }"
+        >
+          {{ entry.note || `${$t("attachments.milestone")} ${index + 1}` }}
         </v-list-item-title>
 
         <v-list-item-subtitle v-if="editingId !== entry.id">
@@ -64,9 +83,13 @@
     </v-list>
 
     <!-- Empty state -->
-    <div v-else class="text-center py-6 text-medium-emphasis bg-surface-variant rounded-lg mb-4" style="opacity: 0.5">
+    <div
+      v-else
+      class="text-center py-6 text-medium-emphasis bg-surface-variant rounded-lg mb-4"
+      style="opacity: 0.5"
+    >
       <v-icon size="48" class="mb-2">mdi-stairs-up</v-icon>
-      <p class="text-body-2">{{ $t('progress.createFirstMilestone') }}</p>
+      <p class="text-body-2">{{ $t("progress.createFirstMilestone") }}</p>
     </div>
 
     <!-- Add milestone -->
@@ -102,7 +125,7 @@
         />
         <v-spacer />
         <div class="text-caption text-medium-emphasis">
-          {{ remainingCount }} {{ $t('progress.remaining') }}
+          {{ remainingCount }} {{ $t("progress.remaining") }}
         </div>
       </div>
     </v-card>
@@ -110,64 +133,65 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import type { GoalWithRelations, ProgressEntry } from '@/types/database'
-import { formatDate } from '@/utils/format'
+import { ref, computed } from "vue";
+import type { GoalWithRelations, ProgressEntry } from "@/types/database";
+import { formatDate } from "@/utils/format";
 
 const props = defineProps<{
-  goal: GoalWithRelations
-  readonly?: boolean
-}>()
+  goal: GoalWithRelations;
+  readonly?: boolean;
+}>();
 
 const emit = defineEmits<{
-  add: [note: string, achieved: boolean]
-  toggle: [entryId: string, achieved: boolean]
-  update: [entryId: string, note: string]
-  delete: [entryId: string]
-}>()
+  add: [note: string, achieved: boolean];
+  toggle: [entryId: string, achieved: boolean];
+  update: [entryId: string, note: string];
+  delete: [entryId: string];
+}>();
 
-const newMilestone = ref('')
-const achieveImmediately = ref(true)
-const editingId = ref<string | null>(null)
-const editNote = ref('')
+const newMilestone = ref("");
+const achieveImmediately = ref(true);
+const editingId = ref<string | null>(null);
+const editNote = ref("");
 
-const allMilestones = computed(() => 
-  [...(props.goal.progress_entries || [])].sort((a, b) => 
-    new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  )
-)
+const allMilestones = computed(() =>
+  [...(props.goal.progress_entries || [])].sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+  ),
+);
 
-const completedCount = computed(() => 
-  props.goal.progress_entries?.filter(e => e.achieved).length || 0
-)
+const completedCount = computed(
+  () => props.goal.progress_entries?.filter((e) => e.achieved).length || 0,
+);
 
 const remainingCount = computed(() => {
-  const target = props.goal.target_count || 0
-  const rem = target - completedCount.value
-  return rem > 0 ? rem : 0
-})
+  const target = props.goal.target_count || 0;
+  const rem = target - completedCount.value;
+  return rem > 0 ? rem : 0;
+});
 
 function addMilestone() {
-  if (!newMilestone.value.trim()) return
-  emit('add', newMilestone.value.trim(), achieveImmediately.value)
-  newMilestone.value = ''
+  if (!newMilestone.value.trim()) return;
+  emit("add", newMilestone.value.trim(), achieveImmediately.value);
+  newMilestone.value = "";
   // Keep achieveImmediately as is for next one
 }
 
 function startEdit(entry: ProgressEntry) {
-  editingId.value = entry.id
-  editNote.value = entry.note || ''
+  editingId.value = entry.id;
+  editNote.value = entry.note || "";
 }
 
 function cancelEdit() {
-  editingId.value = null
-  editNote.value = ''
+  editingId.value = null;
+  editNote.value = "";
 }
 
 function saveEdit(id: string) {
-  if (!editNote.value.trim()) return
-  emit('update', id, editNote.value.trim())
-  cancelEdit()
+  if (!editNote.value.trim()) return;
+  emit("update", id, editNote.value.trim());
+  cancelEdit();
 }
 </script>
 

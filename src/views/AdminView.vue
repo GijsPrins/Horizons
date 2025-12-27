@@ -71,7 +71,7 @@
       </v-row>
 
       <!-- Category Dialog -->
-      <v-dialog v-model="categoryDialogOpen" max-width="500">
+      <v-dialog v-model="categoryDialogOpen" max-width="600">
         <v-card>
           <v-card-title>
             {{
@@ -86,32 +86,165 @@
                 v-model="categoryForm.name"
                 :label="$t('categories.name')"
                 :rules="[rules.required]"
-                class="mb-2"
+                class="mb-4"
               />
-              <v-text-field
-                v-model="categoryForm.color"
-                :label="$t('categories.colorHex')"
-                :placeholder="$t('categories.colorPlaceholder')"
-                :rules="[rules.required]"
-                class="mb-2"
-              >
-                <template #prepend>
-                  <div
-                    class="color-preview"
-                    :style="{ backgroundColor: categoryForm.color }"
-                  />
-                </template>
-              </v-text-field>
-              <v-text-field
-                v-model="categoryForm.icon"
-                :label="$t('categories.iconMdi')"
-                :placeholder="$t('categories.iconPlaceholder')"
-                :rules="[rules.required]"
-              >
-                <template #prepend>
-                  <v-icon>{{ categoryForm.icon || "mdi-tag" }}</v-icon>
-                </template>
-              </v-text-field>
+
+              <!-- Color Picker -->
+              <div class="mb-4">
+                <label class="text-subtitle-2 font-weight-medium mb-2 d-block">
+                  {{ $t("categories.color") }}
+                </label>
+                <v-menu :close-on-content-click="false">
+                  <template #activator="{ props }">
+                    <v-card
+                      v-bind="props"
+                      variant="outlined"
+                      class="color-picker-card pa-3"
+                      hover
+                    >
+                      <div class="d-flex align-center justify-space-between">
+                        <div class="d-flex align-center">
+                          <div
+                            class="color-preview-large mr-3"
+                            :style="{ backgroundColor: categoryForm.color }"
+                          />
+                          <div>
+                            <div class="text-body-2 font-weight-medium">
+                              {{ categoryForm.color }}
+                            </div>
+                            <div class="text-caption text-medium-emphasis">
+                              {{ $t("categories.clickToChange") }}
+                            </div>
+                          </div>
+                        </div>
+                        <v-icon>mdi-chevron-down</v-icon>
+                      </div>
+                    </v-card>
+                  </template>
+                  <v-card min-width="300">
+                    <v-card-text class="pa-2">
+                      <v-color-picker
+                        v-model="categoryForm.color"
+                        mode="hex"
+                        :modes="['hex']"
+                        show-swatches
+                        :swatches="commonColors"
+                      />
+                    </v-card-text>
+                  </v-card>
+                </v-menu>
+              </div>
+
+              <!-- Icon Picker -->
+              <div class="mb-4">
+                <label class="text-subtitle-2 font-weight-medium mb-2 d-block">
+                  {{ $t("categories.icon") }}
+                </label>
+                <v-menu :close-on-content-click="false" max-width="420">
+                  <template #activator="{ props }">
+                    <v-card
+                      v-bind="props"
+                      variant="outlined"
+                      class="icon-picker-card pa-3"
+                      hover
+                    >
+                      <div class="d-flex align-center justify-space-between">
+                        <div class="d-flex align-center">
+                          <v-avatar
+                            :color="categoryForm.color"
+                            size="36"
+                            class="mr-3"
+                          >
+                            <v-icon color="white" size="20">
+                              {{ categoryForm.icon || "mdi-tag" }}
+                            </v-icon>
+                          </v-avatar>
+                          <div>
+                            <div class="text-body-2 font-weight-medium">
+                              {{ categoryForm.icon }}
+                            </div>
+                            <div class="text-caption text-medium-emphasis">
+                              {{ $t("categories.clickToChange") }}
+                            </div>
+                          </div>
+                        </div>
+                        <v-icon>mdi-chevron-down</v-icon>
+                      </div>
+                    </v-card>
+                  </template>
+                  <v-card>
+                    <v-card-title class="text-subtitle-1">
+                      {{ $t("categories.selectIcon") }}
+                    </v-card-title>
+                    <v-divider />
+                    <v-card-text class="pa-3">
+                      <div class="icon-grid mb-3">
+                        <v-btn
+                          v-for="icon in commonIcons"
+                          :key="icon"
+                          :variant="
+                            categoryForm.icon === icon ? 'tonal' : 'text'
+                          "
+                          :color="
+                            categoryForm.icon === icon ? 'primary' : undefined
+                          "
+                          size="large"
+                          class="icon-option"
+                          :class="{ 'icon-in-use': isIconInUse(icon) }"
+                          @click="categoryForm.icon = icon"
+                        >
+                          <v-icon size="22">{{ icon }}</v-icon>
+                          <v-icon
+                            v-if="isIconInUse(icon)"
+                            size="12"
+                            class="icon-in-use-badge"
+                          >
+                            mdi-check-circle
+                          </v-icon>
+                        </v-btn>
+                      </div>
+                      <v-divider class="mb-3" />
+                      <v-text-field
+                        v-model="categoryForm.icon"
+                        :label="$t('categories.customIcon')"
+                        :placeholder="$t('categories.iconPlaceholder')"
+                        density="compact"
+                        variant="outlined"
+                        :hint="$t('categories.customIconHint')"
+                        persistent-hint
+                      >
+                        <template #prepend-inner>
+                          <v-icon size="20">{{
+                            categoryForm.icon || "mdi-tag"
+                          }}</v-icon>
+                        </template>
+                      </v-text-field>
+                    </v-card-text>
+                  </v-card>
+                </v-menu>
+              </div>
+
+              <!-- Preview -->
+              <v-card variant="outlined" class="pa-3">
+                <div class="text-caption mb-2">
+                  {{ $t("categories.preview") }}
+                </div>
+                <div class="d-flex align-center">
+                  <v-avatar :color="categoryForm.color" size="40" class="mr-3">
+                    <v-icon color="white">{{
+                      categoryForm.icon || "mdi-tag"
+                    }}</v-icon>
+                  </v-avatar>
+                  <div>
+                    <div class="font-weight-medium">
+                      {{ categoryForm.name || $t("categories.name") }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ categoryForm.color }} • {{ categoryForm.icon }}
+                    </div>
+                  </div>
+                </div>
+              </v-card>
             </v-form>
           </v-card-text>
           <v-card-actions>
@@ -184,6 +317,56 @@ const rules = {
   required: (v: string) => !!v || t("common.required"),
 };
 
+// Common colors for quick selection
+const commonColors = [
+  ["#F44336", "#E91E63", "#9C27B0", "#673AB7"],
+  ["#3F51B5", "#2196F3", "#03A9F4", "#00BCD4"],
+  ["#009688", "#4CAF50", "#8BC34A", "#CDDC39"],
+  ["#FFEB3B", "#FFC107", "#FF9800", "#FF5722"],
+  ["#795548", "#9E9E9E", "#607D8B", "#000000"],
+];
+
+// Common icons for categories
+const commonIcons = [
+  "mdi-tag",
+  "mdi-star",
+  "mdi-heart",
+  "mdi-home",
+  "mdi-briefcase",
+  "mdi-school",
+  "mdi-dumbbell",
+  "mdi-book",
+  "mdi-lightbulb",
+  "mdi-target",
+  "mdi-rocket",
+  "mdi-trophy",
+  "mdi-flag",
+  "mdi-chart-line",
+  "mdi-brain",
+  "mdi-account-group",
+  "mdi-cash",
+  "mdi-camera",
+  "mdi-music",
+  "mdi-gamepad",
+  "mdi-airplane",
+  "mdi-hammer",
+  "mdi-palette",
+  "mdi-laptop",
+  "mdi-pizza",
+  "mdi-tree",
+  "mdi-run",
+  "mdi-meditation",
+  "mdi-yoga",
+  "mdi-weight-lifter",
+  "mdi-bike",
+  "mdi-food-apple",
+  "mdi-water",
+  "mdi-sleep",
+  "mdi-coffee",
+  "mdi-tea",
+  "mdi-shopping",
+];
+
 function openCategoryDialog(category?: Category) {
   editingCategory.value = category || null;
   if (category) {
@@ -196,6 +379,14 @@ function openCategoryDialog(category?: Category) {
     categoryForm.icon = "mdi-tag";
   }
   categoryDialogOpen.value = true;
+}
+
+function isIconInUse(icon: string): boolean {
+  if (!categories.value) return false;
+  // Don't mark as in-use if it's the current category being edited
+  return categories.value.some(
+    (cat) => cat.icon === icon && cat.id !== editingCategory.value?.id,
+  );
 }
 
 async function saveCategory() {
@@ -250,5 +441,53 @@ async function handleDeleteCategory() {
   height: 24px;
   border-radius: 4px;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.2);
+}
+
+.color-preview-large {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  border: 2px solid rgba(var(--v-theme-on-surface), 0.12);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.color-picker-card,
+.icon-picker-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.color-picker-card:hover,
+.icon-picker-card:hover {
+  border-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.04);
+}
+
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.icon-option {
+  aspect-ratio: 1;
+  min-width: 56px !important;
+  height: 56px !important;
+  position: relative;
+}
+
+.icon-option.icon-in-use {
+  opacity: 0.5;
+}
+
+.icon-in-use-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgb(var(--v-theme-surface));
+  border-radius: 50%;
+  color: rgb(var(--v-theme-success));
 }
 </style>

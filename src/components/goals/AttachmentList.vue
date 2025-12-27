@@ -2,11 +2,7 @@
   <div class="attachment-list">
     <!-- Image Gallery Section -->
     <div v-if="images.length > 0" class="image-grid mb-4">
-      <div 
-        v-for="img in images" 
-        :key="img.id" 
-        class="image-item"
-      >
+      <div v-for="img in images" :key="img.id" class="image-item">
         <v-img
           :src="img.url || ''"
           aspect-ratio="1"
@@ -19,7 +15,7 @@
               <v-progress-circular indeterminate color="grey-lighten-5" />
             </v-row>
           </template>
-          
+
           <!-- Delete overlay -->
           <div v-if="!readonly" class="image-delete-overlay">
             <v-btn
@@ -31,7 +27,9 @@
             />
           </div>
         </v-img>
-        <div class="text-caption mt-1 text-truncate px-1">{{ img.title || $t('attachments.image') }}</div>
+        <div class="text-caption mt-1 text-truncate px-1">
+          {{ img.title || $t("attachments.image") }}
+        </div>
       </div>
     </div>
 
@@ -44,12 +42,16 @@
         elevation="0"
         border
         rounded="lg"
-        :href="attachment.type === 'url' ? (attachment.url || undefined) : undefined"
+        :href="
+          attachment.type === 'url' ? attachment.url || undefined : undefined
+        "
         :target="attachment.type === 'url' ? '_blank' : undefined"
       >
         <template #prepend>
           <v-avatar :color="getTypeColor(attachment.type)" size="36">
-            <v-icon size="20" color="white">{{ getTypeIcon(attachment.type) }}</v-icon>
+            <v-icon size="20" color="white">{{
+              getTypeIcon(attachment.type)
+            }}</v-icon>
           </v-avatar>
         </template>
 
@@ -82,9 +84,12 @@
       </v-list-item>
     </v-list>
 
-    <div v-if="attachments.length === 0" class="text-center py-8 text-medium-emphasis border rounded-xl border-dashed">
+    <div
+      v-if="attachments.length === 0"
+      class="text-center py-8 text-medium-emphasis border rounded-xl border-dashed"
+    >
       <v-icon size="48" class="mb-2 opacity-20">mdi-paperclip</v-icon>
-      <p class="text-body-2">{{ $t('attachments.noAttachments') }}</p>
+      <p class="text-body-2">{{ $t("attachments.noAttachments") }}</p>
     </div>
 
     <!-- Lightbox for images -->
@@ -101,66 +106,84 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { Attachment, AttachmentType } from '@/types/database'
-import { formatDate } from '@/utils/format'
+import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import type { Attachment, AttachmentType } from "@/types/database";
+import { formatDate } from "@/utils/format";
 
 const props = defineProps<{
-  attachments: Attachment[]
-  readonly?: boolean
-}>()
+  attachments: Attachment[];
+  readonly?: boolean;
+}>();
 
 defineEmits<{
-  delete: [attachmentId: string]
-}>()
+  delete: [attachmentId: string];
+}>();
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const showLightbox = ref(false)
-const lightboxImage = ref('')
+const showLightbox = ref(false);
+const lightboxImage = ref("");
 
-const images = computed(() => 
-  props.attachments.filter(a => a.type === 'image' || (a.type === 'url' && isImageUrl(a.url)))
-)
+const images = computed(() =>
+  props.attachments.filter(
+    (a) => a.type === "image" || (a.type === "url" && isImageUrl(a.url)),
+  ),
+);
 
-const otherAttachments = computed(() => 
-  props.attachments.filter(a => !isImage(a))
-)
+const otherAttachments = computed(() =>
+  props.attachments.filter((a) => !isImage(a)),
+);
 
 function isImage(a: Attachment) {
-  return a.type === 'image' || (a.type === 'url' && isImageUrl(a.url))
+  return a.type === "image" || (a.type === "url" && isImageUrl(a.url));
 }
 
 function isImageUrl(url: string | null) {
-  if (!url) return false
-  return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url)
+  if (!url) return false;
+  return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
 }
 
 function openImage(url: string | null) {
   if (url) {
-    lightboxImage.value = url
-    showLightbox.value = true
+    lightboxImage.value = url;
+    showLightbox.value = true;
   }
 }
 
 const typeConfig = computed(() => ({
-  url: { icon: 'mdi-link', color: 'info', label: t('attachments.link') },
-  image: { icon: 'mdi-image', color: 'success', label: t('attachments.image') },
-  note: { icon: 'mdi-note-text', color: 'warning', label: t('attachments.note') },
-  milestone: { icon: 'mdi-flag', color: 'secondary', label: t('attachments.milestone') }
-}))
+  url: { icon: "mdi-link", color: "info", label: t("attachments.link") },
+  image: { icon: "mdi-image", color: "success", label: t("attachments.image") },
+  note: {
+    icon: "mdi-note-text",
+    color: "warning",
+    label: t("attachments.note"),
+  },
+  milestone: {
+    icon: "mdi-flag",
+    color: "secondary",
+    label: t("attachments.milestone"),
+  },
+}));
 
 function getTypeIcon(type: AttachmentType): string {
-  return typeConfig.value[type as keyof typeof typeConfig.value]?.icon || 'mdi-paperclip'
+  return (
+    typeConfig.value[type as keyof typeof typeConfig.value]?.icon ||
+    "mdi-paperclip"
+  );
 }
 
 function getTypeColor(type: AttachmentType): string {
-  return typeConfig.value[type as keyof typeof typeConfig.value]?.color || 'grey'
+  return (
+    typeConfig.value[type as keyof typeof typeConfig.value]?.color || "grey"
+  );
 }
 
 function getDefaultTitle(attachment: Attachment): string {
-  return typeConfig.value[attachment.type as keyof typeof typeConfig.value]?.label || t('attachments.title')
+  return (
+    typeConfig.value[attachment.type as keyof typeof typeConfig.value]?.label ||
+    t("attachments.title")
+  );
 }
 </script>
 
@@ -196,5 +219,3 @@ function getDefaultTitle(attachment: Attachment): string {
   transform: translateX(4px);
 }
 </style>
-
-
