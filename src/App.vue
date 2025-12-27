@@ -14,7 +14,7 @@
       {{ snackbar.message }}
       <template #actions>
         <v-btn variant="text" @click="snackbar.show = false">
-          {{ $t('common.close') }}
+          {{ $t("common.close") }}
         </v-btn>
       </template>
     </v-snackbar>
@@ -22,31 +22,23 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, provide, onMounted } from 'vue'
-import { useAuth } from '@/composables/useAuth'
+import { reactive, provide } from "vue";
 
 // Global snackbar state
 const snackbar = reactive({
   show: false,
-  message: '',
-  color: 'success'
-})
+  message: "",
+  color: "success",
+});
 
-function showSnackbar(message: string, color: string = 'success') {
-  snackbar.message = message
-  snackbar.color = color
-  snackbar.show = true
+function showSnackbar(message: string, color: string = "success") {
+  snackbar.message = message;
+  snackbar.color = color;
+  snackbar.show = true;
 }
 
 // Provide snackbar function to all components
-provide('showSnackbar', showSnackbar)
-
-// Initialize auth
-const { initialize } = useAuth()
-
-onMounted(() => {
-  initialize()
-})
+provide("showSnackbar", showSnackbar);
 </script>
 
 <style>
@@ -56,7 +48,7 @@ html {
 }
 
 .v-application {
-  font-family: 'Inter', 'Roboto', sans-serif;
+  font-family: "Inter", "Roboto", sans-serif;
 }
 
 /* Smooth transitions */
