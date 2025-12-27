@@ -89,7 +89,7 @@
         <v-chip-group v-model="selectedCategoryId" mandatory>
           <v-chip
             :value="null"
-            :variant="selectedCategoryId === null ? 'flat' : 'tonal'"
+            :variant="selectedCategoryId === null ? 'flat' : 'outlined'"
             color="primary"
             class="mr-1"
           >
@@ -99,8 +99,16 @@
             v-for="cat in categories"
             :key="cat.id"
             :value="cat.id"
-            :color="cat.color"
-            :variant="selectedCategoryId === cat.id ? 'flat' : 'tonal'"
+            :style="{
+              backgroundColor:
+                selectedCategoryId === cat.id ? cat.color : undefined,
+              color:
+                selectedCategoryId === cat.id
+                  ? getContrastColor(cat.color)
+                  : cat.color,
+              borderColor: cat.color,
+            }"
+            :variant="selectedCategoryId === cat.id ? 'flat' : 'outlined'"
             class="mr-1"
           >
             <v-icon start size="16">{{ cat.icon }}</v-icon>
@@ -307,6 +315,23 @@ async function handleGoalSubmit(formData: GoalFormData & { team_id: string }) {
 
 function navigateToGoal(goal: GoalWithRelations) {
   router.push({ name: "goal", params: { id: goal.id } });
+}
+
+// Helper to get contrasting text color for category chips
+function getContrastColor(hexColor: string): string {
+  // Remove # if present
+  const hex = hexColor.replace("#", "");
+
+  // Convert to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  // Return white for dark colors, dark for light colors
+  return luminance > 0.5 ? "#000000" : "#FFFFFF";
 }
 </script>
 
