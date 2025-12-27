@@ -353,6 +353,7 @@ import AttachmentDialog from "@/components/goals/AttachmentDialog.vue";
 import GoalDialog from "@/components/goals/GoalDialog.vue";
 import { useGoal } from "@/composables/useGoals";
 import { calculateProgress } from "@/composables/useProgress";
+import { formatDate } from "@/utils/format";
 import { useAuth } from "@/composables/useAuth";
 import { useCategories } from "@/composables/useCategories";
 import { useGoalViewLogic } from "@/composables/useGoalViewLogic";
@@ -405,14 +406,6 @@ const typeLabel = computed(() => {
 const completedMilestones = computed(
   () => goal.value?.progress_entries?.filter((e) => e.achieved).length || 0,
 );
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("nl-NL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
 
 function openEditDialog() {
   goalDialogOpen.value = true;

@@ -139,6 +139,7 @@ import { useTheme } from "vuetify";
 import { useI18n } from "vue-i18n";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import { useAuth } from "@/composables/useAuth";
+import { formatDate } from "@/utils/format";
 
 const theme = useTheme();
 const { t } = useI18n();
@@ -190,15 +191,6 @@ watch(
   },
   { immediate: true },
 );
-
-function formatDate(dateString?: string) {
-  if (!dateString) return "-";
-  return new Date(dateString).toLocaleDateString("nl-NL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
 
 function setTheme(mode: any) {
   theme.global.name.value = mode;

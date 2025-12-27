@@ -162,6 +162,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import { useTeam, useTeams } from "@/composables/useTeams";
+import { formatDate } from "@/utils/format";
 
 const route = useRoute();
 const router = useRouter();
@@ -174,14 +175,6 @@ const { team, isLoading, isTeamAdmin } = useTeam(teamId);
 const { leaveTeam } = useTeams();
 
 const confirmLeave = ref(false);
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("nl-NL", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 async function copyInviteCode() {
   if (!team.value) return;

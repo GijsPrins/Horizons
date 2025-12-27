@@ -194,6 +194,7 @@ import { useI18n } from "vue-i18n";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import { useTeams } from "@/composables/useTeams";
 import { useGoals } from "@/composables/useGoals";
+import { formatDate } from "@/utils/format";
 
 const { t } = useI18n();
 
@@ -262,14 +263,6 @@ const months = computed(() => {
     };
   });
 });
-
-function formatDate(dateString: string | null) {
-  if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("nl-NL", {
-    day: "numeric",
-    month: "long",
-  });
-}
 </script>
 
 <style scoped>

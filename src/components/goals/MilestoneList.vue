@@ -112,6 +112,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { GoalWithRelations, ProgressEntry } from '@/types/database'
+import { formatDate } from '@/utils/format'
 
 const props = defineProps<{
   goal: GoalWithRelations
@@ -145,13 +146,6 @@ const remainingCount = computed(() => {
   const rem = target - completedCount.value
   return rem > 0 ? rem : 0
 })
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('nl-NL', {
-    day: 'numeric',
-    month: 'short'
-  })
-}
 
 function addMilestone() {
   if (!newMilestone.value.trim()) return

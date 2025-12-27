@@ -104,6 +104,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Attachment, AttachmentType } from '@/types/database'
+import { formatDate } from '@/utils/format'
 
 const props = defineProps<{
   attachments: Attachment[]
@@ -160,15 +161,6 @@ function getTypeColor(type: AttachmentType): string {
 
 function getDefaultTitle(attachment: Attachment): string {
   return typeConfig.value[attachment.type as keyof typeof typeConfig.value]?.label || t('attachments.title')
-}
-
-function formatDate(dateString: string | null) {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString('nl-NL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
 }
 </script>
 

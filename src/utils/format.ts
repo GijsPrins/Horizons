@@ -4,9 +4,10 @@
  * Format a date using the browser's locale
  */
 export function formatDate(
-  date: string | Date,
+  date: string | Date | null | undefined,
   options?: Intl.DateTimeFormatOptions,
 ): string {
+  if (!date) return "";
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "short",
@@ -22,9 +23,10 @@ export function formatDate(
  * Format a date with time
  */
 export function formatDateTime(
-  date: string | Date,
+  date: string | Date | null | undefined,
   options?: Intl.DateTimeFormatOptions,
 ): string {
+  if (!date) return "";
   const defaultOptions: Intl.DateTimeFormatOptions = {
     year: "numeric",
     month: "short",
@@ -38,7 +40,10 @@ export function formatDateTime(
 /**
  * Format a date as a relative time (e.g., "2 days ago")
  */
-export function formatRelativeTime(date: string | Date): string {
+export function formatRelativeTime(
+  date: string | Date | null | undefined,
+): string {
+  if (!date) return "";
   const now = new Date();
   const then = new Date(date);
   const diffMs = now.getTime() - then.getTime();
