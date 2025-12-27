@@ -8,9 +8,9 @@
             <v-avatar size="80" class="mb-2 border">
               <v-img :src="logoPath" contain />
             </v-avatar>
-            <h1 class="text-h4 font-weight-bold mt-2">Horizons</h1>
+            <h1 class="text-h4 font-weight-bold mt-2">{{ $t('app.name') }}</h1>
             <p class="text-body-2 text-medium-emphasis">
-              Samen naar nieuwe horizons
+              {{ $t('app.tagline') }}
             </p>
           </div>
 
@@ -18,7 +18,7 @@
           <v-form @submit.prevent="handleLogin" ref="formRef">
             <v-text-field
               v-model="email"
-              label="E-mailadres"
+              :label="$t('auth.email')"
               type="email"
               prepend-inner-icon="mdi-email"
               :rules="[rules.required, rules.email]"
@@ -29,7 +29,7 @@
 
             <v-text-field
               v-model="password"
-              label="Wachtwoord"
+              :label="$t('auth.password')"
               :type="showPassword ? 'text' : 'password'"
               prepend-inner-icon="mdi-lock"
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
@@ -47,7 +47,7 @@
               block
               :loading="loading"
             >
-              Inloggen
+              {{ $t('auth.login') }}
             </v-btn>
           </v-form>
 
@@ -66,13 +66,13 @@
           <!-- Register link -->
           <div class="text-center mt-6">
             <span class="text-body-2 text-medium-emphasis">
-              Nog geen account?
+              {{ $t('auth.noAccount') }}
             </span>
             <router-link
               :to="{ name: 'register' }"
               class="text-primary font-weight-medium ml-1"
             >
-              Registreren
+              {{ $t('auth.register') }}
             </router-link>
           </div>
         </v-card>
@@ -84,10 +84,12 @@
 <script setup lang="ts">
 import { ref, inject } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 const { login, loading } = useAuth()
 const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
 
@@ -102,8 +104,8 @@ const emailError = ref('')
 const passwordError = ref('')
 
 const rules = {
-  required: (v: string) => !!v || 'Dit veld is verplicht',
-  email: (v: string) => /.+@.+\..+/.test(v) || 'Ongeldig e-mailadres'
+  required: (v: string) => !!v || t('common.required'),
+  email: (v: string) => /.+@.+\..+/.test(v) || t('auth.errors.invalidEmail')
 }
 
 async function handleLogin() {
@@ -114,11 +116,11 @@ async function handleLogin() {
   const result = await login(email.value, password.value)
 
   if (result.success) {
-    showSnackbar?.('Welkom terug!', 'success')
+    showSnackbar?.(t('auth.loginSuccess'), 'success')
     const redirect = route.query.redirect as string
     router.push(redirect || { name: 'dashboard' })
   } else {
-    error.value = result.error || 'Inloggen mislukt'
+    error.value = result.error || t('auth.errors.loginFailed')
   }
 }
 </script>

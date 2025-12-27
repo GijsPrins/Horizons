@@ -1,16 +1,11 @@
 <template>
   <DefaultLayout>
     <v-container fluid class="pa-4">
-      <h1 class="text-h4 font-weight-bold mb-4">Beheer</h1>
+      <h1 class="text-h4 font-weight-bold mb-4">{{ $t("admin.title") }}</h1>
 
       <!-- Not admin warning -->
-      <v-alert
-        v-if="!isAdmin"
-        type="warning"
-        variant="tonal"
-        class="mb-4"
-      >
-        Je hebt geen toegang tot deze pagina.
+      <v-alert v-if="!isAdmin" type="warning" variant="tonal" class="mb-4">
+        {{ $t("admin.noAccess") }}
       </v-alert>
 
       <v-row v-else>
@@ -19,23 +14,16 @@
           <v-card elevation="0" border>
             <v-card-title class="d-flex align-center">
               <v-icon start>mdi-tag-multiple</v-icon>
-              Globale categorieën
+              {{ $t("admin.globalCategories") }}
               <v-spacer />
-              <v-btn
-                size="small"
-                color="primary"
-                @click="openCategoryDialog()"
-              >
+              <v-btn size="small" color="primary" @click="openCategoryDialog()">
                 <v-icon start>mdi-plus</v-icon>
-                Toevoegen
+                {{ $t("common.add") }}
               </v-btn>
             </v-card-title>
             <v-card-text>
               <v-list v-if="categories && categories.length > 0">
-                <v-list-item
-                  v-for="category in categories"
-                  :key="category.id"
-                >
+                <v-list-item v-for="category in categories" :key="category.id">
                   <template #prepend>
                     <v-avatar :color="category.color" size="36">
                       <v-icon size="18">{{ category.icon }}</v-icon>
@@ -44,7 +32,12 @@
 
                   <v-list-item-title>{{ category.name }}</v-list-item-title>
                   <v-list-item-subtitle>
-                    {{ category.color }} &bull; {{ category.icon }}
+                    {{
+                      $t("categories.colorAndIcon", {
+                        color: category.color,
+                        icon: category.icon,
+                      })
+                    }}
                   </v-list-item-subtitle>
 
                   <template #append>
@@ -70,7 +63,7 @@
               </v-list>
 
               <div v-else class="text-center py-4 text-medium-emphasis">
-                Geen categorieën gevonden.
+                {{ $t("admin.noCategories") }}
               </div>
             </v-card-text>
           </v-card>
@@ -81,20 +74,24 @@
       <v-dialog v-model="categoryDialogOpen" max-width="500">
         <v-card>
           <v-card-title>
-            {{ editingCategory ? 'Categorie bewerken' : 'Nieuwe categorie' }}
+            {{
+              editingCategory
+                ? $t("categories.editCategory")
+                : $t("admin.newCategory")
+            }}
           </v-card-title>
           <v-card-text>
             <v-form ref="categoryFormRef">
               <v-text-field
                 v-model="categoryForm.name"
-                label="Naam"
+                :label="$t('categories.name')"
                 :rules="[rules.required]"
                 class="mb-2"
               />
               <v-text-field
                 v-model="categoryForm.color"
-                label="Kleur (hex)"
-                placeholder="#4CAF50"
+                :label="$t('categories.colorHex')"
+                :placeholder="$t('categories.colorPlaceholder')"
                 :rules="[rules.required]"
                 class="mb-2"
               >
@@ -107,12 +104,12 @@
               </v-text-field>
               <v-text-field
                 v-model="categoryForm.icon"
-                label="Icoon (mdi-...)"
-                placeholder="mdi-heart"
+                :label="$t('categories.iconMdi')"
+                :placeholder="$t('categories.iconPlaceholder')"
                 :rules="[rules.required]"
               >
                 <template #prepend>
-                  <v-icon>{{ categoryForm.icon || 'mdi-tag' }}</v-icon>
+                  <v-icon>{{ categoryForm.icon || "mdi-tag" }}</v-icon>
                 </template>
               </v-text-field>
             </v-form>
@@ -120,10 +117,10 @@
           <v-card-actions>
             <v-spacer />
             <v-btn variant="text" @click="categoryDialogOpen = false">
-              Annuleren
+              {{ $t("common.cancel") }}
             </v-btn>
             <v-btn color="primary" variant="flat" @click="saveCategory">
-              Opslaan
+              {{ $t("common.save") }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -132,17 +129,21 @@
       <!-- Delete confirmation -->
       <v-dialog v-model="deleteDialogOpen" max-width="400">
         <v-card>
-          <v-card-title>Categorie verwijderen?</v-card-title>
+          <v-card-title>{{ $t("categories.deleteQuestion") }}</v-card-title>
           <v-card-text>
-            Weet je zeker dat je "{{ deletingCategory?.name }}" wilt verwijderen?
+            {{
+              $t("admin.confirmDeleteCategory", {
+                name: deletingCategory?.name,
+              })
+            }}
           </v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn variant="text" @click="deleteDialogOpen = false">
-              Annuleren
+              {{ $t("common.cancel") }}
             </v-btn>
             <v-btn color="error" variant="flat" @click="handleDeleteCategory">
-              Verwijderen
+              {{ $t("common.delete") }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -152,49 +153,54 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, inject } from 'vue'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { useAuth } from '@/composables/useAuth'
-import { useCategories } from '@/composables/useCategories'
-import type { Category } from '@/types/database'
+import { ref, reactive, inject } from "vue";
+import { useI18n } from "vue-i18n";
+import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import { useAuth } from "@/composables/useAuth";
+import { useCategories } from "@/composables/useCategories";
+import type { Category } from "@/types/database";
 
-const { isAdmin } = useAuth()
-const { categories, createCategory, updateCategory, deleteCategory } = useCategories()
-const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
+const { t } = useI18n();
 
-const categoryDialogOpen = ref(false)
-const deleteDialogOpen = ref(false)
-const categoryFormRef = ref()
-const editingCategory = ref<Category | null>(null)
-const deletingCategory = ref<Category | null>(null)
+const { isAdmin } = useAuth();
+const { categories, createCategory, updateCategory, deleteCategory } =
+  useCategories();
+const showSnackbar =
+  inject<(msg: string, color?: string) => void>("showSnackbar");
+
+const categoryDialogOpen = ref(false);
+const deleteDialogOpen = ref(false);
+const categoryFormRef = ref();
+const editingCategory = ref<Category | null>(null);
+const deletingCategory = ref<Category | null>(null);
 
 const categoryForm = reactive({
-  name: '',
-  color: '#607D8B',
-  icon: 'mdi-tag'
-})
+  name: "",
+  color: "#607D8B",
+  icon: "mdi-tag",
+});
 
 const rules = {
-  required: (v: string) => !!v || 'Dit veld is verplicht'
-}
+  required: (v: string) => !!v || t("common.required"),
+};
 
 function openCategoryDialog(category?: Category) {
-  editingCategory.value = category || null
+  editingCategory.value = category || null;
   if (category) {
-    categoryForm.name = category.name
-    categoryForm.color = category.color
-    categoryForm.icon = category.icon
+    categoryForm.name = category.name;
+    categoryForm.color = category.color;
+    categoryForm.icon = category.icon;
   } else {
-    categoryForm.name = ''
-    categoryForm.color = '#607D8B'
-    categoryForm.icon = 'mdi-tag'
+    categoryForm.name = "";
+    categoryForm.color = "#607D8B";
+    categoryForm.icon = "mdi-tag";
   }
-  categoryDialogOpen.value = true
+  categoryDialogOpen.value = true;
 }
 
 async function saveCategory() {
-  const { valid } = await categoryFormRef.value.validate()
-  if (!valid) return
+  const { valid } = await categoryFormRef.value.validate();
+  if (!valid) return;
 
   try {
     if (editingCategory.value) {
@@ -202,39 +208,39 @@ async function saveCategory() {
         id: editingCategory.value.id,
         name: categoryForm.name,
         color: categoryForm.color,
-        icon: categoryForm.icon
-      })
-      showSnackbar?.('Categorie bijgewerkt!', 'success')
+        icon: categoryForm.icon,
+      });
+      showSnackbar?.(t("admin.categoryUpdated"), "success");
     } else {
       await createCategory({
         name: categoryForm.name,
         color: categoryForm.color,
         icon: categoryForm.icon,
         sort_order: (categories.value?.length || 0) + 1,
-        team_id: null
-      })
-      showSnackbar?.('Categorie aangemaakt!', 'success')
+        team_id: null,
+      });
+      showSnackbar?.(t("admin.categoryCreated"), "success");
     }
-    categoryDialogOpen.value = false
+    categoryDialogOpen.value = false;
   } catch (error: any) {
-    showSnackbar?.(error.message || 'Er is een fout opgetreden', 'error')
+    showSnackbar?.(error.message || t("common.error"), "error");
   }
 }
 
 function confirmDeleteCategory(category: Category) {
-  deletingCategory.value = category
-  deleteDialogOpen.value = true
+  deletingCategory.value = category;
+  deleteDialogOpen.value = true;
 }
 
 async function handleDeleteCategory() {
-  if (!deletingCategory.value) return
+  if (!deletingCategory.value) return;
   try {
-    await deleteCategory(deletingCategory.value.id)
-    showSnackbar?.('Categorie verwijderd', 'success')
+    await deleteCategory(deletingCategory.value.id);
+    showSnackbar?.(t("admin.categoryDeleted"), "success");
   } catch (error: any) {
-    showSnackbar?.(error.message || 'Er is een fout opgetreden', 'error')
+    showSnackbar?.(error.message || t("common.error"), "error");
   }
-  deleteDialogOpen.value = false
+  deleteDialogOpen.value = false;
 }
 </script>
 

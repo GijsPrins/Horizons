@@ -14,7 +14,7 @@
       {{ snackbar.message }}
       <template #actions>
         <v-btn variant="text" @click="snackbar.show = false">
-          Sluiten
+          {{ $t('common.close') }}
         </v-btn>
       </template>
     </v-snackbar>

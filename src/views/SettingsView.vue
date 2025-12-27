@@ -1,7 +1,7 @@
 <template>
   <DefaultLayout>
     <v-container fluid class="pa-4">
-      <h1 class="text-h4 font-weight-bold mb-4">Instellingen</h1>
+      <h1 class="text-h4 font-weight-bold mb-4">{{ $t("settings.title") }}</h1>
 
       <v-row>
         <v-col cols="12" md="6">
@@ -9,13 +9,16 @@
           <v-card elevation="0" border class="mb-4">
             <v-card-title>
               <v-icon start>mdi-account</v-icon>
-              Profiel
+              {{ $t("settings.profile") }}
             </v-card-title>
             <v-card-text>
               <v-form ref="formRef">
                 <div class="d-flex align-center mb-6">
                   <v-avatar size="80" color="primary" class="mr-4">
-                    <v-img v-if="profile?.avatar_url" :src="profile.avatar_url" />
+                    <v-img
+                      v-if="profile?.avatar_url"
+                      :src="profile.avatar_url"
+                    />
                     <span v-else class="text-h4 text-white">
                       {{ profile?.display_name?.charAt(0)?.toUpperCase() }}
                     </span>
@@ -23,7 +26,7 @@
                   <div>
                     <v-file-input
                       v-model="avatarFile"
-                      label="Profielfoto uploaden"
+                      :label="$t('settings.uploadAvatar')"
                       prepend-icon="mdi-camera"
                       accept="image/*"
                       density="compact"
@@ -33,14 +36,14 @@
                       @update:model-value="handleAvatarUpload"
                     />
                     <div class="text-caption text-medium-emphasis">
-                      Max 2MB. JPG, PNG of GIF.
+                      {{ $t("settings.avatarFileHint") }}
                     </div>
                   </div>
                 </div>
 
                 <v-text-field
                   v-model="form.display_name"
-                  label="Weergavenaam"
+                  :label="$t('settings.displayName')"
                   :rules="[rules.required]"
                   variant="outlined"
                   class="mb-2"
@@ -48,10 +51,10 @@
 
                 <v-text-field
                   v-model="form.avatar_url"
-                  label="Avatar URL (handmatig)"
-                  placeholder="https://..."
+                  :label="$t('settings.avatarUrlManual')"
+                  :placeholder="$t('settings.avatarUrlManualPlaceholder')"
                   variant="outlined"
-                  hint="Je kunt ook handmatig een URL opgeven"
+                  :hint="$t('settings.avatarHint')"
                   persistent-hint
                   class="mb-4"
                 />
@@ -62,7 +65,7 @@
                   block
                   @click="saveProfile"
                 >
-                  Basisgegevens Opslaan
+                  {{ $t("common.save") }}
                 </v-btn>
               </v-form>
             </v-card-text>
@@ -72,7 +75,7 @@
           <v-card elevation="0" border>
             <v-card-title>
               <v-icon start>mdi-palette</v-icon>
-              Thema
+              {{ $t("settings.theme") }}
             </v-card-title>
             <v-card-text>
               <v-btn-toggle
@@ -83,11 +86,11 @@
               >
                 <v-btn value="light">
                   <v-icon start>mdi-weather-sunny</v-icon>
-                  Licht
+                  {{ $t("settings.themes.light") }}
                 </v-btn>
                 <v-btn value="dark">
                   <v-icon start>mdi-weather-night</v-icon>
-                  Donker
+                  {{ $t("settings.themes.dark") }}
                 </v-btn>
               </v-btn-toggle>
             </v-card-text>
@@ -99,24 +102,26 @@
           <v-card elevation="0" border>
             <v-card-title>
               <v-icon start>mdi-information</v-icon>
-              Account
+              {{ $t("settings.account") }}
             </v-card-title>
             <v-list>
               <v-list-item>
-                <v-list-item-title>E-mail</v-list-item-title>
+                <v-list-item-title>{{ $t("auth.email") }}</v-list-item-title>
                 <v-list-item-subtitle>{{ user?.email }}</v-list-item-subtitle>
               </v-list-item>
               <v-list-item>
-                <v-list-item-title>Aangemaakt</v-list-item-title>
+                <v-list-item-title>{{
+                  $t("common.created")
+                }}</v-list-item-title>
                 <v-list-item-subtitle>
                   {{ formatDate(profile?.created_at) }}
                 </v-list-item-subtitle>
               </v-list-item>
               <v-list-item v-if="isAdmin">
-                <v-list-item-title>Rol</v-list-item-title>
+                <v-list-item-title>{{ $t("teams.role") }}</v-list-item-title>
                 <v-list-item-subtitle>
                   <v-chip size="small" color="primary">
-                    App Beheerder
+                    {{ $t("teams.roles.admin") }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
@@ -129,88 +134,95 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, inject } from 'vue'
-import { useTheme } from 'vuetify'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { useAuth } from '@/composables/useAuth'
+import { ref, reactive, watch, inject } from "vue";
+import { useTheme } from "vuetify";
+import { useI18n } from "vue-i18n";
+import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import { useAuth } from "@/composables/useAuth";
 
-const theme = useTheme()
-const { user, profile, isAdmin, updateProfile, uploadAvatar } = useAuth()
-const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
+const theme = useTheme();
+const { t } = useI18n();
+const { user, profile, isAdmin, updateProfile, uploadAvatar } = useAuth();
+const showSnackbar =
+  inject<(msg: string, color?: string) => void>("showSnackbar");
 
-const formRef = ref()
-const isSaving = ref(false)
-const themeMode = ref(theme.global.name.value)
-const avatarFile = ref<File | null>(null)
+const formRef = ref();
+const isSaving = ref(false);
+const themeMode = ref(theme.global.name.value);
+const avatarFile = ref<File | null>(null);
 
 const form = reactive({
-  display_name: '',
-  avatar_url: ''
-})
+  display_name: "",
+  avatar_url: "",
+});
 
-async function handleAvatarUpload(file: any) {
+async function handleAvatarUpload(file: File | File[]) {
   // Vuetify file input can return an array or single file depending on props
-  const targetFile = Array.isArray(file) ? file[0] : file
-  if (!targetFile) return
+  const targetFile = Array.isArray(file) ? file[0] : file;
+  if (!targetFile) return;
 
-  isSaving.value = true
+  isSaving.value = true;
   try {
-    const result = await uploadAvatar(targetFile)
+    const result = await uploadAvatar(targetFile);
     if (result.success) {
-      showSnackbar?.('Profielfoto geüpload!', 'success')
-      avatarFile.value = null
+      showSnackbar?.(t("settings.avatarUploaded"), "success");
+      avatarFile.value = null;
     } else {
-      showSnackbar?.(result.error || 'Upload mislukt', 'error')
+      showSnackbar?.(result.error || t("common.error"), "error");
     }
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 
 const rules = {
-  required: (v: string) => !!v || 'Dit veld is verplicht'
-}
+  required: (v: string) => !!v || t("common.required"),
+};
 
 // Populate form when profile loads
-watch(profile, (newProfile) => {
-  if (newProfile) {
-    form.display_name = newProfile.display_name
-    form.avatar_url = newProfile.avatar_url || ''
-  }
-}, { immediate: true })
+watch(
+  profile,
+  (newProfile) => {
+    if (newProfile) {
+      form.display_name = newProfile.display_name;
+      form.avatar_url = newProfile.avatar_url || "";
+    }
+  },
+  { immediate: true },
+);
 
 function formatDate(dateString?: string) {
-  if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('nl-NL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  })
+  if (!dateString) return "-";
+  return new Date(dateString).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 function setTheme(mode: any) {
-  theme.global.name.value = mode
-  localStorage.setItem('horizons-theme', mode)
+  theme.global.name.value = mode;
+  localStorage.setItem("horizons-theme", mode);
 }
 
 async function saveProfile() {
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
 
-  isSaving.value = true
+  isSaving.value = true;
   try {
     const result = await updateProfile({
       display_name: form.display_name,
-      avatar_url: form.avatar_url || null
-    })
+      avatar_url: form.avatar_url || null,
+    });
 
     if (result.success) {
-      showSnackbar?.('Profiel opgeslagen!', 'success')
+      showSnackbar?.(t("settings.saved"), "success");
     } else {
-      showSnackbar?.(result.error || 'Er is een fout opgetreden', 'error')
+      showSnackbar?.(result.error || t("common.error"), "error");
     }
   } finally {
-    isSaving.value = false
+    isSaving.value = false;
   }
 }
 </script>

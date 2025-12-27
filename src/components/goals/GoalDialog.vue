@@ -1,14 +1,13 @@
 <template>
   <v-dialog
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
+    v-model="isOpen"
     max-width="600"
     persistent
   >
     <v-card>
       <v-card-title class="d-flex align-center">
         <v-icon class="mr-2">{{ isEditing ? 'mdi-pencil' : 'mdi-plus' }}</v-icon>
-        {{ isEditing ? 'Doel bewerken' : 'Nieuw doel' }}
+        {{ isEditing ? $t('goals.editGoal') : $t('goals.addGoal') }}
         <v-spacer />
         <v-btn icon variant="text" @click="close">
           <v-icon>mdi-close</v-icon>
@@ -22,8 +21,8 @@
           <!-- Title -->
           <v-text-field
             v-model="form.title"
-            label="Titel"
-            placeholder="Bijv. Mijn eerste marathon lopen"
+            :label="$t('goals.goalTitle')"
+            :placeholder="$t('goals.titlePlaceholder')"
             :rules="[rules.required]"
             prepend-inner-icon="mdi-flag"
             class="mb-2"
@@ -32,8 +31,8 @@
           <!-- Description -->
           <v-textarea
             v-model="form.description"
-            label="Beschrijving (optioneel)"
-            placeholder="Voeg extra details toe..."
+            :label="$t('goals.goalDescription')"
+            :placeholder="$t('goals.descriptionPlaceholder')"
             rows="2"
             auto-grow
             prepend-inner-icon="mdi-text"
@@ -43,7 +42,7 @@
           <!-- Year -->
           <v-select
             v-model="form.year"
-            label="Jaar"
+            :label="$t('goals.goalYear')"
             :items="yearOptions"
             prepend-inner-icon="mdi-calendar"
             class="mb-2"
@@ -52,7 +51,7 @@
           <!-- Goal Type -->
           <v-select
             v-model="form.goal_type"
-            label="Type doel"
+            :label="$t('goals.goalType')"
             :items="goalTypes"
             item-title="label"
             item-value="value"
@@ -75,20 +74,20 @@
           <v-text-field
             v-if="form.goal_type === 'milestone'"
             v-model.number="form.target_count"
-            label="Aantal mijlpalen"
+            :label="$t('progress.targetCount')"
             type="number"
             min="1"
             max="100"
             :rules="[rules.required, rules.positiveNumber]"
             prepend-inner-icon="mdi-stairs"
-            hint="Hoeveel stappen heeft dit doel?"
+            :hint="$t('goals.stepsHint')"
             class="mb-2"
           />
 
           <!-- Category -->
           <v-select
             v-model="form.category_id"
-            label="Categorie"
+            :label="$t('goals.goalCategory')"
             :items="categories"
             item-title="name"
             item-value="id"
@@ -114,8 +113,8 @@
           <!-- Share with team -->
           <v-switch
             v-model="form.is_shared"
-            label="Delen met team"
-            hint="Als dit aan staat, kunnen teamleden dit doel zien"
+            :label="$t('goals.isShared')"
+            :hint="$t('goals.sharedHint')"
             persistent-hint
             color="primary"
             class="mb-4"
@@ -123,15 +122,15 @@
 
           <!-- Optional Initial Image -->
           <div class="mt-4">
-            <h4 class="text-subtitle-2 mb-2">Afbeelding toevoegen (optioneel)</h4>
+            <h4 class="text-subtitle-2 mb-2">{{ $t('attachments.addImage') }}</h4>
             <v-file-input
               v-model="form.file"
-              label="Kies een foto"
+              :label="$t('attachments.choosePhoto')"
               prepend-icon="mdi-camera"
               accept="image/*"
               variant="outlined"
               density="compact"
-              hint="Deze wordt als eerste bijlage toegevoegd"
+              :hint="$t('attachments.firstImageHint')"
               persistent-hint
             />
           </div>
@@ -143,7 +142,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="close">
-          Annuleren
+          {{ $t('common.cancel') }}
         </v-btn>
         <v-btn
           color="primary"
@@ -151,7 +150,7 @@
           :loading="isSubmitting"
           @click="handleSubmit"
         >
-          {{ isEditing ? 'Opslaan' : 'Aanmaken' }}
+          {{ isEditing ? $t('common.save') : $t('common.create') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -160,21 +159,23 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Goal, GoalFormData, Category } from '@/types/database'
 
+const isOpen = defineModel<boolean>({ required: true })
+
 const props = defineProps<{
-  modelValue: boolean
   goal?: Goal | null
   teamId: string
   categories: Category[]
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
   'submit': [formData: GoalFormData & { team_id: string }]
 }>()
 
 const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
+const { t } = useI18n()
 
 const formRef = ref()
 const isSubmitting = ref(false)
@@ -201,37 +202,37 @@ const yearOptions = computed(() => {
   return years
 })
 
-const goalTypes = [
+const goalTypes = computed(() => [
   {
     value: 'single',
-    label: 'Eenmalig',
+    label: t('goals.types.single'),
     icon: 'mdi-flag-checkered',
     color: 'info',
-    description: 'Een doel dat je één keer bereikt'
+    description: t('goals.typeDescriptions.single')
   },
   {
     value: 'weekly',
-    label: 'Wekelijks',
+    label: t('goals.types.weekly'),
     icon: 'mdi-calendar-week',
     color: 'warning',
-    description: 'Track je voortgang per week (52 weken)'
+    description: t('goals.typeDescriptions.weekly')
   },
   {
     value: 'milestone',
-    label: 'Mijlpalen',
+    label: t('goals.types.milestone'),
     icon: 'mdi-stairs',
     color: 'secondary',
-    description: 'Een doel met meerdere stappen'
+    description: t('goals.typeDescriptions.milestone')
   }
-]
+])
 
 const rules = {
-  required: (v: any) => !!v || 'Dit veld is verplicht',
-  positiveNumber: (v: number) => v > 0 || 'Moet groter dan 0 zijn'
+  required: (v: any) => !!v || t('common.required'),
+  positiveNumber: (v: number) => v > 0 || t('common.positiveNumber')
 }
 
 // Reset form when dialog opens
-watch(() => props.modelValue, (open) => {
+watch(isOpen, (open) => {
   if (open) {
     if (props.goal) {
       // Editing - populate form
@@ -258,7 +259,7 @@ watch(() => props.modelValue, (open) => {
 })
 
 function close() {
-  emit('update:modelValue', false)
+  isOpen.value = false
 }
 
 async function handleSubmit() {
@@ -273,7 +274,7 @@ async function handleSubmit() {
     })
     close()
   } catch (error: any) {
-    showSnackbar?.(error.message || 'Er is een fout opgetreden', 'error')
+    showSnackbar?.(error.message || t('common.error'), 'error')
   } finally {
     isSubmitting.value = false
   }

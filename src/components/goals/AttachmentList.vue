@@ -31,7 +31,7 @@
             />
           </div>
         </v-img>
-        <div class="text-caption mt-1 text-truncate px-1">{{ img.title || 'Afbeelding' }}</div>
+        <div class="text-caption mt-1 text-truncate px-1">{{ img.title || $t('attachments.image') }}</div>
       </div>
     </div>
 
@@ -84,7 +84,7 @@
 
     <div v-if="attachments.length === 0" class="text-center py-8 text-medium-emphasis border rounded-xl border-dashed">
       <v-icon size="48" class="mb-2 opacity-20">mdi-paperclip</v-icon>
-      <p class="text-body-2">Nog geen bijlagen of foto's</p>
+      <p class="text-body-2">{{ $t('attachments.noAttachments') }}</p>
     </div>
 
     <!-- Lightbox for images -->
@@ -102,6 +102,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Attachment, AttachmentType } from '@/types/database'
 
 const props = defineProps<{
@@ -112,6 +113,8 @@ const props = defineProps<{
 defineEmits<{
   delete: [attachmentId: string]
 }>()
+
+const { t } = useI18n()
 
 const showLightbox = ref(false)
 const lightboxImage = ref('')
@@ -140,23 +143,23 @@ function openImage(url: string | null) {
   }
 }
 
-const typeConfig: Record<AttachmentType, { icon: string; color: string; label: string }> = {
-  url: { icon: 'mdi-link', color: 'info', label: 'Link' },
-  image: { icon: 'mdi-image', color: 'success', label: 'Afbeelding' },
-  note: { icon: 'mdi-note-text', color: 'warning', label: 'Notitie' },
-  milestone: { icon: 'mdi-flag', color: 'secondary', label: 'Mijlpaal' }
-}
+const typeConfig = computed(() => ({
+  url: { icon: 'mdi-link', color: 'info', label: t('attachments.link') },
+  image: { icon: 'mdi-image', color: 'success', label: t('attachments.image') },
+  note: { icon: 'mdi-note-text', color: 'warning', label: t('attachments.note') },
+  milestone: { icon: 'mdi-flag', color: 'secondary', label: t('attachments.milestone') }
+}))
 
 function getTypeIcon(type: AttachmentType): string {
-  return typeConfig[type]?.icon || 'mdi-paperclip'
+  return typeConfig.value[type as keyof typeof typeConfig.value]?.icon || 'mdi-paperclip'
 }
 
 function getTypeColor(type: AttachmentType): string {
-  return typeConfig[type]?.color || 'grey'
+  return typeConfig.value[type as keyof typeof typeConfig.value]?.color || 'grey'
 }
 
 function getDefaultTitle(attachment: Attachment): string {
-  return typeConfig[attachment.type]?.label || 'Bijlage'
+  return typeConfig.value[attachment.type as keyof typeof typeConfig.value]?.label || t('attachments.title')
 }
 
 function formatDate(dateString: string | null) {

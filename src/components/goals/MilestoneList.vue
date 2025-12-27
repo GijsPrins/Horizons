@@ -35,7 +35,7 @@
         </div>
 
         <v-list-item-title v-else :class="{ 'text-decoration-line-through text-medium-emphasis': entry.achieved }">
-          {{ entry.note || `Mijlpaal ${index + 1}` }}
+          {{ entry.note || `${$t('attachments.milestone')} ${index + 1}` }}
         </v-list-item-title>
 
         <v-list-item-subtitle v-if="editingId !== entry.id">
@@ -66,7 +66,7 @@
     <!-- Empty state -->
     <div v-else class="text-center py-6 text-medium-emphasis bg-surface-variant rounded-lg mb-4" style="opacity: 0.5">
       <v-icon size="48" class="mb-2">mdi-stairs-up</v-icon>
-      <p class="text-body-2">Voeg je eerste mijlpaal toe om te beginnen!</p>
+      <p class="text-body-2">{{ $t('progress.createFirstMilestone') }}</p>
     </div>
 
     <!-- Add milestone -->
@@ -74,8 +74,8 @@
       <div class="d-flex align-end">
         <v-text-field
           v-model="newMilestone"
-          label="Nieuwe mijlpaal"
-          placeholder="Bijv. Eerste 5km hardlopen"
+          :label="$t('attachments.newMilestone')"
+          :placeholder="$t('progress.milestonePlaceholder')"
           variant="underlined"
           density="compact"
           hide-details
@@ -94,7 +94,7 @@
       <div class="d-flex align-center mt-2">
         <v-checkbox
           v-model="achieveImmediately"
-          label="Direct voltooien"
+          :label="$t('progress.achieveImmediately')"
           density="compact"
           hide-details
           color="success"
@@ -102,7 +102,7 @@
         />
         <v-spacer />
         <div class="text-caption text-medium-emphasis">
-          {{ remainingCount }} te gaan
+          {{ remainingCount }} {{ $t('progress.remaining') }}
         </div>
       </div>
     </v-card>

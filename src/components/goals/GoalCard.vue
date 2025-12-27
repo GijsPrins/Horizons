@@ -22,14 +22,17 @@
             class="goal-card__progress"
           >
             <span class="text-caption font-weight-bold">
-              {{ progress }}%
+              {{ $t("goals.progressPercentage", { progress }) }}
             </span>
           </v-progress-circular>
         </div>
 
         <div class="flex-grow-1 min-width-0 overflow-hidden">
           <!-- Title -->
-          <h3 class="goal-card__title font-weight-bold mb-2" :title="goal.title">
+          <h3
+            class="goal-card__title font-weight-bold mb-2"
+            :title="goal.title"
+          >
             {{ goal.title }}
           </h3>
 
@@ -44,7 +47,7 @@
               <v-icon start size="12">{{ typeIcon }}</v-icon>
               {{ typeLabel }}
             </v-chip>
-            
+
             <v-chip
               v-if="goal.category"
               size="x-small"
@@ -63,12 +66,9 @@
     <!-- Footer -->
     <v-card-actions class="pt-0 px-3 pb-3">
       <v-avatar size="24" :color="categoryColor" class="elevation-1">
-        <v-img
-          v-if="goal.profile?.avatar_url"
-          :src="goal.profile.avatar_url"
-        />
+        <v-img v-if="goal.profile?.avatar_url" :src="goal.profile.avatar_url" />
         <span v-else class="text-caption text-white">
-          {{ goal.profile?.display_name?.charAt(0)?.toUpperCase() || '?' }}
+          {{ goal.profile?.display_name?.charAt(0)?.toUpperCase() || "?" }}
         </span>
       </v-avatar>
 
@@ -79,18 +79,13 @@
         v-if="goal.is_shared"
         size="16"
         color="primary"
-        title="Gedeeld met team"
+        :title="$t('goals.shared')"
       >
         mdi-eye
       </v-icon>
 
       <!-- Completed indicator -->
-      <v-icon
-        v-if="goal.is_completed"
-        size="16"
-        color="success"
-        class="ml-1"
-      >
+      <v-icon v-if="goal.is_completed" size="16" color="success" class="ml-1">
         mdi-check-circle
       </v-icon>
     </v-card-actions>
@@ -98,44 +93,73 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { GoalWithRelations } from '@/types/database'
-import { calculateProgress } from '@/composables/useProgress'
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import type { GoalWithRelations } from "@/types/database";
+import { calculateProgress } from "@/composables/useProgress";
 
 const props = defineProps<{
-  goal: GoalWithRelations
-}>()
+  goal: GoalWithRelations;
+}>();
 
 defineEmits<{
-  click: [goal: GoalWithRelations]
-}>()
+  click: [goal: GoalWithRelations];
+}>();
 
-const progress = computed(() => calculateProgress(props.goal))
+const { t } = useI18n();
 
-const categoryColor = computed(() => props.goal.category?.color || '#607D8B')
+const progress = computed(() => calculateProgress(props.goal));
 
-const typeConfig = {
-  single: { label: 'Eenmalig', icon: 'mdi-flag-checkered', color: 'info' },
-  weekly: { label: 'Wekelijks', icon: 'mdi-calendar-week', color: 'warning' },
-  milestone: { label: 'Mijlpalen', icon: 'mdi-stairs', color: 'secondary' }
-}
+const categoryColor = computed(() => props.goal.category?.color || "#607D8B");
 
-const typeLabel = computed(() => typeConfig[props.goal.goal_type as keyof typeof typeConfig]?.label || 'Doel')
-const typeIcon = computed(() => typeConfig[props.goal.goal_type as keyof typeof typeConfig]?.icon || 'mdi-target')
-const typeColor = computed(() => typeConfig[props.goal.goal_type as keyof typeof typeConfig]?.color || 'primary')
+const typeConfig = computed(() => ({
+  single: {
+    label: t("goals.types.single"),
+    icon: "mdi-flag-checkered",
+    color: "info",
+  },
+  weekly: {
+    label: t("goals.types.weekly"),
+    icon: "mdi-calendar-week",
+    color: "warning",
+  },
+  milestone: {
+    label: t("goals.types.milestone"),
+    icon: "mdi-stairs",
+    color: "secondary",
+  },
+}));
+
+const typeLabel = computed(
+  () =>
+    typeConfig.value[props.goal.goal_type as keyof typeof typeConfig.value]
+      ?.label || t("goals.goalType"),
+);
+const typeIcon = computed(
+  () =>
+    typeConfig.value[props.goal.goal_type as keyof typeof typeConfig.value]
+      ?.icon || "mdi-target",
+);
+const typeColor = computed(
+  () =>
+    typeConfig.value[props.goal.goal_type as keyof typeof typeConfig.value]
+      ?.color || "primary",
+);
 </script>
 
 <style scoped>
 .goal-card {
   position: relative;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: pointer;
 }
 
 .goal-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important;
 }
 
 .goal-card__border {
@@ -144,7 +168,7 @@ const typeColor = computed(() => typeConfig[props.goal.goal_type as keyof typeof
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--category-color, #607D8B);
+  background: var(--category-color, #607d8b);
   border-radius: 4px 4px 0 0;
 }
 

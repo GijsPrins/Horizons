@@ -1,4 +1,5 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { supabase } from '@/plugins/supabase'
 import type { GoalWithRelations, GoalFormData } from '@/types/database'
@@ -9,6 +10,8 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const { uploadFile } = useAttachments()
+
+  const { t } = useI18n()
 
   const resolvedYear = computed(() => toValue(year) ?? new Date().getFullYear())
   const resolvedTeamId = computed(() => toValue(teamId))
@@ -70,7 +73,7 @@ export function useGoals(teamId?: MaybeRefOrGetter<string | undefined>, year?: M
   // Create goal mutation
   const createGoalMutation = useMutation({
     mutationFn: async (formData: GoalFormData & { team_id: string }) => {
-      if (!user.value) throw new Error('Not authenticated')
+      if (!user.value) throw new Error(t('auth.errors.notAuthenticated'))
 
       const { file, ...goalData } = formData
 

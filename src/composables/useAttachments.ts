@@ -1,10 +1,12 @@
 // Attachments composable with VueQuery
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { supabase } from '@/plugins/supabase'
 import type { Attachment, AttachmentFormData } from '@/types/database'
 
 export function useAttachments() {
+  const { t } = useI18n()
   const queryClient = useQueryClient()
 
   // Add attachment record to database
@@ -40,7 +42,7 @@ export function useAttachments() {
       const fileExt = file.name.split('.').pop()?.toLowerCase()
       
       if (!fileExt || !allowedExtensions.includes(fileExt)) {
-        throw new Error('Alleen afbeeldingen (jpg, png, gif, webp) zijn toegestaan.')
+        throw new Error(t('attachments.errorWrongFileType'))
       }
 
       // 2. Upload to storage

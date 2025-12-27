@@ -1,26 +1,22 @@
 <template>
-  <v-dialog
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    max-width="500"
-  >
+  <v-dialog v-model="isOpen" max-width="500">
     <v-card>
-      <v-card-title>Bijlage toevoegen</v-card-title>
+      <v-card-title>{{ $t("attachments.addAttachment") }}</v-card-title>
 
       <v-card-text>
         <!-- Type tabs -->
         <v-tabs v-model="selectedType" grow class="mb-4">
           <v-tab value="url">
             <v-icon start>mdi-link</v-icon>
-            Link
+            {{ $t("attachments.link") }}
           </v-tab>
           <v-tab value="image">
             <v-icon start>mdi-image</v-icon>
-            Afbeelding
+            {{ $t("attachments.image") }}
           </v-tab>
           <v-tab value="note">
             <v-icon start>mdi-note-text</v-icon>
-            Notitie
+            {{ $t("attachments.note") }}
           </v-tab>
         </v-tabs>
 
@@ -28,11 +24,11 @@
           <!-- Title (optional) -->
           <v-text-field
             v-model="form.title"
-            label="Titel (optioneel)"
+            :label="$t('common.title') + ' (' + $t('common.optional') + ')'"
             variant="outlined"
             density="compact"
             class="mb-3"
-            placeholder="Bijv. Foto van de overwinning"
+            :placeholder="$t('attachments.titlePlaceholder')"
           />
 
           <!-- Image toggle: URL or File -->
@@ -43,16 +39,27 @@
             density="compact"
             class="mb-2"
           >
-            <v-radio label="URL" value="url" />
-            <v-radio label="Uploaden" value="file" />
+            <v-radio :label="$t('attachments.url')" value="url" />
+            <v-radio :label="$t('attachments.upload')" value="file" />
           </v-radio-group>
 
           <!-- URL input -->
           <v-text-field
-            v-if="selectedType === 'url' || (selectedType === 'image' && imageSource === 'url')"
+            v-if="
+              selectedType === 'url' ||
+              (selectedType === 'image' && imageSource === 'url')
+            "
             v-model="form.url"
-            :label="selectedType === 'image' ? 'Afbeelding URL' : 'URL'"
-            :placeholder="selectedType === 'image' ? 'https://example.com/image.jpg' : 'https://...'"
+            :label="
+              selectedType === 'image'
+                ? $t('attachments.imageUrl')
+                : $t('attachments.url')
+            "
+            :placeholder="
+              selectedType === 'image'
+                ? $t('common.imageUrlPlaceholder')
+                : $t('common.urlPlaceholder')
+            "
             :rules="[rules.required, rules.url]"
             variant="outlined"
             density="compact"
@@ -63,7 +70,7 @@
           <v-file-input
             v-if="selectedType === 'image' && imageSource === 'file'"
             v-model="form.file"
-            label="Kies afbeelding"
+            :label="$t('attachments.chooseImage')"
             variant="outlined"
             density="compact"
             prepend-icon="mdi-camera"
@@ -75,8 +82,8 @@
           <v-textarea
             v-if="selectedType === 'note'"
             v-model="form.content"
-            label="Notitie"
-            placeholder="Schrijf je gedachten, herinneringen of notities..."
+            :label="$t('attachments.note')"
+            :placeholder="$t('attachments.notePlaceholder')"
             :rules="[rules.required]"
             variant="outlined"
             rows="4"
@@ -87,9 +94,9 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="close">Annuleren</v-btn>
+        <v-btn variant="text" @click="close">{{ $t("common.cancel") }}</v-btn>
         <v-btn color="primary" variant="flat" @click="handleSubmit">
-          Toevoegen
+          {{ $t("common.add") }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -97,72 +104,90 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
-import type { AttachmentType } from '@/types/database'
+import { ref, reactive, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import type { AttachmentType } from "@/types/database";
+
+const isOpen = defineModel<boolean>({ required: true });
 
 const props = defineProps<{
-  modelValue: boolean
-  goalId: string
-}>()
+  goalId: string;
+}>();
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-  submit: [data: { type: AttachmentType; title: string; url?: string; content?: string; file?: File }]
-}>()
+  submit: [
+    data: {
+      type: AttachmentType;
+      title: string;
+      url?: string;
+      content?: string;
+      file?: File;
+    },
+  ];
+}>();
 
-const formRef = ref()
-const selectedType = ref<AttachmentType>('url')
-const imageSource = ref<'url' | 'file'>('file')
+const formRef = ref();
+const selectedType = ref<AttachmentType>("url");
+const imageSource = ref<"url" | "file">("file");
 
 const form = reactive({
-  title: '',
-  url: '',
-  content: '',
-  file: null as File | null
-})
+  title: "",
+  url: "",
+  content: "",
+  file: null as File | null,
+});
 
 const rules = {
-  required: (v: string) => !!v || 'Dit veld is verplicht',
-  requiredFile: (v: any) => !!v || 'Selecteer een bestand',
+  required: (v: string) => !!v || t("common.required"),
+  requiredFile: (v: any) => !!v || t("common.selectFile"),
   url: (v: string) => {
-    if (!v) return true
+    if (!v) return true;
     try {
-      new URL(v)
-      return true
+      new URL(v);
+      return true;
     } catch {
-      return 'Ongeldige URL'
+      return t("common.invalidUrl");
     }
-  }
-}
+  },
+};
 
 // Reset form when dialog opens
-watch(() => props.modelValue, (open) => {
+watch(isOpen, (open) => {
   if (open) {
-    form.title = ''
-    form.url = ''
-    form.content = ''
-    form.file = null
-    selectedType.value = 'url'
-    imageSource.value = 'file'
+    form.title = "";
+    form.url = "";
+    form.content = "";
+    form.file = null;
+    selectedType.value = "url";
+    imageSource.value = "file";
   }
-})
+});
 
 function close() {
-  emit('update:modelValue', false)
+  isOpen.value = false;
 }
 
 async function handleSubmit() {
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
 
-  emit('submit', {
+  emit("submit", {
     type: selectedType.value,
     title: form.title,
-    url: selectedType.value === 'url' || (selectedType.value === 'image' && imageSource.value === 'url') ? form.url : undefined,
-    content: selectedType.value === 'note' ? form.content : undefined,
-    file: selectedType.value === 'image' && imageSource.value === 'file' ? form.file || undefined : undefined
-  })
+    url:
+      selectedType.value === "url" ||
+      (selectedType.value === "image" && imageSource.value === "url")
+        ? form.url
+        : undefined,
+    content: selectedType.value === "note" ? form.content : undefined,
+    file:
+      selectedType.value === "image" && imageSource.value === "file"
+        ? form.file || undefined
+        : undefined,
+  });
 
-  close()
+  close();
 }
 </script>

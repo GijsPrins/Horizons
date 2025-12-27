@@ -21,18 +21,16 @@
             class="weekly-grid__week"
             :class="{
               'weekly-grid__week--achieved': isWeekAchieved(week),
-              'weekly-grid__week--missed': !isWeekAchieved(week) && week < effectiveCurrentWeek,
+              'weekly-grid__week--missed':
+                !isWeekAchieved(week) && week < effectiveCurrentWeek,
               'weekly-grid__week--current': week === effectiveCurrentWeek,
               'weekly-grid__week--future': week > effectiveCurrentWeek,
-              'weekly-grid__week--clickable': !readonly && week <= effectiveCurrentWeek
+              'weekly-grid__week--clickable':
+                !readonly && week <= effectiveCurrentWeek,
             }"
             @click="handleClick(week)"
           >
-            <v-icon
-              v-if="isWeekAchieved(week)"
-              size="12"
-              color="white"
-            >
+            <v-icon v-if="isWeekAchieved(week)" size="12" color="white">
               mdi-check
             </v-icon>
             <v-icon
@@ -50,84 +48,118 @@
     <!-- Legend -->
     <div class="weekly-grid__legend mt-3">
       <div class="weekly-grid__legend-item">
-        <div class="weekly-grid__week weekly-grid__week--achieved" style="width: 16px; height: 16px;" />
-        <span class="text-caption ml-1">Behaald</span>
+        <div
+          class="weekly-grid__week weekly-grid__week--achieved"
+          style="width: 16px; height: 16px"
+        />
+        <span class="text-caption ml-1">{{ $t("progress.achieved") }}</span>
       </div>
       <div class="weekly-grid__legend-item">
-        <div class="weekly-grid__week weekly-grid__week--missed" style="width: 16px; height: 16px;" />
-        <span class="text-caption ml-1">Gemist</span>
+        <div
+          class="weekly-grid__week weekly-grid__week--missed"
+          style="width: 16px; height: 16px"
+        />
+        <span class="text-caption ml-1">{{ $t("progress.missed") }}</span>
       </div>
       <div class="weekly-grid__legend-item">
-        <div class="weekly-grid__week" style="width: 16px; height: 16px;" />
-        <span class="text-caption ml-1">Toekomst</span>
+        <div class="weekly-grid__week" style="width: 16px; height: 16px" />
+        <span class="text-caption ml-1">{{ $t("progress.future") }}</span>
       </div>
       <div class="weekly-grid__legend-item">
-        <div class="weekly-grid__week weekly-grid__week--current" style="width: 16px; height: 16px;" />
-        <span class="text-caption ml-1">Deze week</span>
+        <div
+          class="weekly-grid__week weekly-grid__week--current"
+          style="width: 16px; height: 16px"
+        />
+        <span class="text-caption ml-1">{{ $t("progress.thisWeek") }}</span>
       </div>
     </div>
 
     <!-- Stats -->
     <div class="mt-3 text-body-2">
-      <strong>{{ achievedCount }}</strong> van <strong>52</strong> weken behaald
-      ({{ Math.round((achievedCount / 52) * 100) }}%)
+      {{
+        $t("progress.weeksAchievedStats", {
+          achieved: achievedCount,
+          total: 52,
+          percentage: Math.round((achievedCount / 52) * 100),
+        })
+      }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { GoalWithRelations } from '@/types/database'
-import { getCurrentWeekNumber } from '@/composables/useProgress'
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import type { GoalWithRelations } from "@/types/database";
+import { getCurrentWeekNumber } from "@/composables/useProgress";
 
 const props = defineProps<{
-  goal: GoalWithRelations
-  readonly?: boolean
-}>()
+  goal: GoalWithRelations;
+  readonly?: boolean;
+}>();
 
 const emit = defineEmits<{
-  toggle: [weekNumber: number, achieved: boolean]
-}>()
+  toggle: [weekNumber: number, achieved: boolean];
+}>();
 
-const months = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec']
+const { t } = useI18n();
+
+const months = [
+  t("date.jan"),
+  t("date.feb"),
+  t("date.mar"),
+  t("date.apr"),
+  t("date.may"),
+  t("date.jun"),
+  t("date.jul"),
+  t("date.aug"),
+  t("date.sep"),
+  t("date.oct"),
+  t("date.nov"),
+  t("date.dec"),
+];
 
 // Calculate current week relative to the goal's year
 const effectiveCurrentWeek = computed(() => {
-  const now = new Date()
-  const thisYear = now.getFullYear()
-  
-  if (props.goal.year < thisYear) return 53 // Everything is in the past
-  if (props.goal.year > thisYear) return 0 // Everything is in the future
-  
-  return getCurrentWeekNumber()
-})
+  const now = new Date();
+  const thisYear = now.getFullYear();
+
+  if (props.goal.year < thisYear) return 53; // Everything is in the past
+  if (props.goal.year > thisYear) return 0; // Everything is in the future
+
+  return getCurrentWeekNumber();
+});
 
 const achievedWeeks = computed(() => {
-  const achieved = new Set<number>()
-  props.goal.progress_entries?.forEach(entry => {
+  const achieved = new Set<number>();
+  props.goal.progress_entries?.forEach((entry) => {
     if (entry.achieved && entry.week_number) {
-      achieved.add(entry.week_number)
+      achieved.add(entry.week_number);
     }
-  })
-  return achieved
-})
+  });
+  return achieved;
+});
 
-const achievedCount = computed(() => achievedWeeks.value.size)
+const achievedCount = computed(() => achievedWeeks.value.size);
 
 function isWeekAchieved(week: number): boolean {
-  return achievedWeeks.value.has(week)
+  return achievedWeeks.value.has(week);
 }
 
 function getWeekTooltip(week: number): string {
-  if (isWeekAchieved(week)) return `Week ${week}: ✓ Behaald`
-  if (week < effectiveCurrentWeek.value) return `Week ${week}: ✗ Gemist`
-  if (week === effectiveCurrentWeek.value) return `Week ${week}: Bezig`
-  return `Week ${week}: Toekomst`
+  const label = t("progress.week");
+  if (isWeekAchieved(week))
+    return `${label} ${week}: ✓ ${t("progress.achieved")}`;
+  if (week < effectiveCurrentWeek.value)
+    return `${label} ${week}: ✗ ${t("progress.missed")}`;
+  if (week === effectiveCurrentWeek.value)
+    return `${label} ${week}: ${t("celebration.inProgress")}`;
+  return `${label} ${week}: ${t("progress.future")}`;
 }
 
 function handleClick(week: number) {
-  if (props.readonly || week > effectiveCurrentWeek.value) return
-  emit('toggle', week, !isWeekAchieved(week))
+  if (props.readonly || week > effectiveCurrentWeek.value) return;
+  emit("toggle", week, !isWeekAchieved(week));
 }
 </script>
 

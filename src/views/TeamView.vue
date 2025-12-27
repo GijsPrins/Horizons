@@ -7,9 +7,11 @@
           <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
         <div class="ml-2">
-          <h1 class="text-h4 font-weight-bold">{{ team?.name || 'Team laden...' }}</h1>
+          <h1 class="text-h4 font-weight-bold">
+            {{ team?.name || $t("common.loading") }}
+          </h1>
           <p class="text-body-2 text-medium-emphasis">
-            {{ team?.description || 'Geen beschrijving' }}
+            {{ team?.description || $t("common.noDescription") }}
           </p>
         </div>
 
@@ -40,13 +42,10 @@
           <v-card elevation="0" border>
             <v-card-title>
               <v-icon start>mdi-account-group</v-icon>
-              Leden ({{ team.team_members?.length || 0 }})
+              {{ $t("teams.members") }}
             </v-card-title>
             <v-list>
-              <v-list-item
-                v-for="member in team.team_members"
-                :key="member.id"
-              >
+              <v-list-item v-for="member in team.team_members" :key="member.id">
                 <template #prepend>
                   <v-avatar color="primary" size="40">
                     <v-img
@@ -54,7 +53,9 @@
                       :src="member.profile.avatar_url"
                     />
                     <span v-else class="text-white">
-                      {{ member.profile?.display_name?.charAt(0)?.toUpperCase() }}
+                      {{
+                        member.profile?.display_name?.charAt(0)?.toUpperCase()
+                      }}
                     </span>
                   </v-avatar>
                 </template>
@@ -67,7 +68,11 @@
                     size="x-small"
                     :color="member.role === 'admin' ? 'primary' : 'default'"
                   >
-                    {{ member.role === 'admin' ? 'Beheerder' : 'Lid' }}
+                    {{
+                      member.role === "admin"
+                        ? $t("teams.roles.admin")
+                        : $t("teams.roles.member")
+                    }}
                   </v-chip>
                 </v-list-item-subtitle>
 
@@ -86,16 +91,16 @@
           <v-card elevation="0" border class="mb-4">
             <v-card-title>
               <v-icon start>mdi-share-variant</v-icon>
-              Uitnodigen
+              {{ $t("teams.invite") }}
             </v-card-title>
             <v-card-text>
               <p class="text-body-2 mb-4">
-                Deel deze code met anderen om ze uit te nodigen voor dit team.
+                {{ $t("teams.inviteDescription") }}
               </p>
 
               <v-text-field
                 :model-value="team.invite_code"
-                label="Uitnodigingscode"
+                :label="$t('teams.inviteCode')"
                 readonly
                 variant="outlined"
               >
@@ -112,7 +117,7 @@
           <v-card v-if="isTeamAdmin" elevation="0" border>
             <v-card-title>
               <v-icon start>mdi-cog</v-icon>
-              Team instellingen
+              {{ $t("teams.settings") }}
             </v-card-title>
             <v-card-text>
               <v-btn
@@ -122,7 +127,7 @@
                 @click="confirmLeave = true"
               >
                 <v-icon start>mdi-logout</v-icon>
-                Team verlaten
+                {{ $t("teams.leaveTeam") }}
               </v-btn>
             </v-card-text>
           </v-card>
@@ -132,14 +137,18 @@
       <!-- Leave confirmation -->
       <v-dialog v-model="confirmLeave" max-width="400">
         <v-card>
-          <v-card-title>Team verlaten?</v-card-title>
+          <v-card-title>{{ $t("teams.leaveTeam") }}</v-card-title>
           <v-card-text>
-            Weet je zeker dat je "{{ team?.name }}" wilt verlaten?
+            {{ $t("teams.confirmLeave", { name: team?.name }) }}
           </v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn variant="text" @click="confirmLeave = false">Annuleren</v-btn>
-            <v-btn color="error" variant="flat" @click="handleLeave">Verlaten</v-btn>
+            <v-btn variant="text" @click="confirmLeave = false">{{
+              $t("common.cancel")
+            }}</v-btn>
+            <v-btn color="error" variant="flat" @click="handleLeave">{{
+              $t("teams.leave")
+            }}</v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -148,44 +157,47 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { useTeam, useTeams } from '@/composables/useTeams'
+import { ref, inject } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import { useTeam, useTeams } from "@/composables/useTeams";
 
-const route = useRoute()
-const router = useRouter()
-const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
+const route = useRoute();
+const router = useRouter();
+const { t } = useI18n();
+const showSnackbar =
+  inject<(msg: string, color?: string) => void>("showSnackbar");
 
-const teamId = route.params.id as string
-const { team, isLoading, isTeamAdmin } = useTeam(teamId)
-const { leaveTeam } = useTeams()
+const teamId = route.params.id as string;
+const { team, isLoading, isTeamAdmin } = useTeam(teamId);
+const { leaveTeam } = useTeams();
 
-const confirmLeave = ref(false)
+const confirmLeave = ref(false);
 
 function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('nl-NL', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  })
+  return new Date(dateString).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 async function copyInviteCode() {
-  if (!team.value) return
-  await navigator.clipboard.writeText(team.value.invite_code)
-  showSnackbar?.('Code gekopieerd!', 'success')
+  if (!team.value) return;
+  await navigator.clipboard.writeText(team.value.invite_code);
+  showSnackbar?.(t("common.copied"), "success");
 }
 
 async function handleLeave() {
-  if (!team.value) return
+  if (!team.value) return;
   try {
-    await leaveTeam(team.value.id)
-    showSnackbar?.('Je hebt het team verlaten', 'success')
-    router.push({ name: 'teams' })
+    await leaveTeam(team.value.id);
+    showSnackbar?.(t("teams.left"), "success");
+    router.push({ name: "teams" });
   } catch (error: any) {
-    showSnackbar?.(error.message || 'Er is een fout opgetreden', 'error')
+    showSnackbar?.(error.message || t("common.error"), "error");
   }
-  confirmLeave.value = false
+  confirmLeave.value = false;
 }
 </script>

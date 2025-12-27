@@ -12,7 +12,7 @@
           <v-avatar size="28" class="mr-2 border">
             <v-img :src="logoPath" contain />
           </v-avatar>
-          <span class="font-weight-bold title-text">Horizons</span>
+          <span class="font-weight-bold title-text">{{ $t('app.name') }}</span>
         </div>
       </v-app-bar-title>
 
@@ -52,20 +52,20 @@
             <template #prepend>
               <v-icon>mdi-cog</v-icon>
             </template>
-            <v-list-item-title>Instellingen</v-list-item-title>
+            <v-list-item-title>{{ $t('nav.settings') }}</v-list-item-title>
           </v-list-item>
           <v-list-item v-if="isAdmin" :to="{ name: 'admin' }">
             <template #prepend>
               <v-icon>mdi-shield-crown</v-icon>
             </template>
-            <v-list-item-title>Beheer</v-list-item-title>
+            <v-list-item-title>{{ $t('nav.admin') }}</v-list-item-title>
           </v-list-item>
           <v-divider />
           <v-list-item @click="handleLogout">
             <template #prepend>
               <v-icon color="error">mdi-logout</v-icon>
             </template>
-            <v-list-item-title class="text-error">Uitloggen</v-list-item-title>
+            <v-list-item-title class="text-error">{{ $t('nav.logout') }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -82,25 +82,25 @@
         <v-list-item
           :to="{ name: 'dashboard' }"
           prepend-icon="mdi-view-dashboard"
-          title="Dashboard"
+          :title="$t('nav.dashboard')"
           :active="$route.name === 'dashboard'"
         />
         <v-list-item
           :to="{ name: 'teams' }"
           prepend-icon="mdi-account-group"
-          title="Teams"
+          :title="$t('nav.teams')"
           :active="$route.name === 'teams'"
         />
         <v-list-item
           :to="{ name: 'celebration' }"
           prepend-icon="mdi-party-popper"
-          title="Viering"
+          :title="$t('nav.celebration')"
           :active="$route.name === 'celebration'"
         />
         <v-list-item
           :to="{ name: 'history' }"
           prepend-icon="mdi-history"
-          title="Geschiedenis"
+          :title="$t('nav.history')"
           :active="$route.name === 'history'"
         />
       </v-list>
@@ -110,7 +110,7 @@
           <v-list-item
             @click="rail = !rail"
             :prepend-icon="rail ? 'mdi-chevron-right' : 'mdi-chevron-left'"
-            :title="rail ? '' : 'Inklappen'"
+            :title="rail ? '' : $t('nav.collapse')"
           />
         </v-list>
       </template>

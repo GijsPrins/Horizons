@@ -2,7 +2,7 @@
   <DefaultLayout>
     <v-container fluid class="pa-4">
       <div class="d-flex align-center mb-6">
-        <h1 class="text-h4 font-weight-bold">Geschiedenis & Planning</h1>
+        <h1 class="text-h4 font-weight-bold">{{ $t('history.title') }}</h1>
         <v-spacer />
         
         <!-- Team Selector -->
@@ -12,7 +12,7 @@
           :items="teams"
           item-title="name"
           item-value="id"
-          label="Team"
+          :label="$t('teams.title')"
           density="compact"
           hide-details
           variant="outlined"
@@ -24,7 +24,7 @@
         <v-select
           v-model="selectedYear"
           :items="availableYears"
-          label="Jaar"
+          :label="$t('goals.goalYear')"
           density="compact"
           hide-details
           variant="outlined"
@@ -35,7 +35,7 @@
       <!-- Loading state -->
       <div v-if="isLoading" class="text-center py-12">
         <v-progress-circular indeterminate color="primary" size="48" />
-        <p class="text-body-2 text-medium-emphasis mt-4">Doelen laden...</p>
+        <p class="text-body-2 text-medium-emphasis mt-4">{{ $t('common.loading') }}</p>
       </div>
 
       <!-- No team selected -->
@@ -46,9 +46,9 @@
         border
       >
         <v-icon size="64" color="primary" class="mb-4">mdi-account-group</v-icon>
-        <h2 class="text-h6 mb-2">Selecteer een team</h2>
+        <h2 class="text-h6 mb-2">{{ $t('dashboard.selectTeam') }}</h2>
         <p class="text-body-2 text-medium-emphasis">
-          Kies een team om de doelen van {{ selectedYear }} te bekijken.
+          {{ $t('history.selectTeamHelp', { year: selectedYear }) }}
         </p>
       </v-card>
 
@@ -60,9 +60,9 @@
         border
       >
         <v-icon size="64" color="primary" class="mb-4">mdi-calendar-blank</v-icon>
-        <h2 class="text-h6 mb-2">Geen doelen voor {{ selectedYear }}</h2>
+        <h2 class="text-h6 mb-2">{{ $t('history.noGoalsForYear', { year: selectedYear }) }}</h2>
         <p class="text-body-2 text-medium-emphasis">
-          Er zijn nog geen doelen aangemaakt voor dit jaar in dit team.
+          {{ $t('history.noGoalsDescription') }}
         </p>
       </v-card>
 

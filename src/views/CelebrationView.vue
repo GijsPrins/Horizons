@@ -4,10 +4,10 @@
       <!-- Header -->
       <div class="text-center mb-8">
         <h1 class="text-h3 font-weight-bold mb-2">
-          🎉 Jaarviering {{ currentYear }}
+          {{ $t("celebration.title", { year: currentYear }) }}
         </h1>
         <p class="text-body-1 text-medium-emphasis">
-          Kijk terug op jullie reis en vier wat jullie hebben bereikt!
+          {{ $t("celebration.description") }}
         </p>
       </div>
 
@@ -19,7 +19,7 @@
           :items="teams"
           item-title="name"
           item-value="id"
-          label="Team"
+          label="$t('celebration.team')"
           density="compact"
           hide-details
           variant="outlined"
@@ -39,7 +39,9 @@
             <div class="text-h3 font-weight-bold text-primary">
               {{ goals.length }}
             </div>
-            <div class="text-body-2 text-medium-emphasis">Totaal doelen</div>
+            <div class="text-body-2 text-medium-emphasis">
+              {{ $t("celebration.stats.goals") }}
+            </div>
           </v-card>
         </v-col>
         <v-col cols="6" md="3">
@@ -47,7 +49,9 @@
             <div class="text-h3 font-weight-bold text-success">
               {{ completedGoals.length }}
             </div>
-            <div class="text-body-2 text-medium-emphasis">Voltooid</div>
+            <div class="text-body-2 text-medium-emphasis">
+              {{ $t("celebration.stats.completed") }}
+            </div>
           </v-card>
         </v-col>
         <v-col cols="6" md="3">
@@ -55,24 +59,35 @@
             <div class="text-h3 font-weight-bold text-warning">
               {{ inProgressGoals.length }}
             </div>
-            <div class="text-body-2 text-medium-emphasis">Bezig</div>
+            <div class="text-body-2 text-medium-emphasis">
+              {{ $t("celebration.stats.inProgress") }}
+            </div>
           </v-card>
         </v-col>
         <v-col cols="6" md="3">
           <v-card class="text-center pa-4" elevation="0" border>
             <div class="text-h3 font-weight-bold text-info">
-              {{ completionRate }}%
+              {{
+                $t("celebration.stats.completionPercentage", { completionRate })
+              }}
             </div>
-            <div class="text-body-2 text-medium-emphasis">Slagingspercentage</div>
+            <div class="text-body-2 text-medium-emphasis">
+              {{ $t("celebration.stats.completionRate") }}
+            </div>
           </v-card>
         </v-col>
       </v-row>
 
       <!-- Journey Timeline -->
-      <v-card v-if="goals && goals.length > 0" elevation="0" border class="mb-8">
+      <v-card
+        v-if="goals && goals.length > 0"
+        elevation="0"
+        border
+        class="mb-8"
+      >
         <v-card-title class="text-center">
           <v-icon start>mdi-timeline</v-icon>
-          Jullie reis door {{ currentYear }}
+          {{ $t("celebration.title", { year: currentYear }) }}
         </v-card-title>
         <v-card-text>
           <div class="journey-timeline">
@@ -95,12 +110,14 @@
                       class="journey-goal"
                       :class="{
                         'journey-goal--completed': goal.is_completed,
-                        'journey-goal--in-progress': !goal.is_completed
+                        'journey-goal--in-progress': !goal.is_completed,
                       }"
-                      :style="{ backgroundColor: goal.category?.color || '#607D8B' }"
+                      :style="{
+                        backgroundColor: goal.category?.color || '#607D8B',
+                      }"
                     >
                       <v-icon size="16" color="white">
-                        {{ goal.is_completed ? 'mdi-check' : 'mdi-clock' }}
+                        {{ goal.is_completed ? "mdi-check" : "mdi-clock" }}
                       </v-icon>
                     </div>
                   </template>
@@ -114,7 +131,7 @@
       <!-- Completed achievements -->
       <div v-if="completedGoals.length > 0" class="mb-8">
         <h2 class="text-h5 font-weight-bold mb-4 text-center">
-          ✨ Behaalde prestaties
+          {{ $t("celebration.completedAchievements") }}
         </h2>
         <v-row>
           <v-col
@@ -136,12 +153,20 @@
                   mdi-trophy
                 </v-icon>
                 <h3 class="text-h6 font-weight-bold mb-1">{{ goal.title }}</h3>
-                <v-chip size="small" :color="goal.category?.color" variant="tonal">
+                <v-chip
+                  size="small"
+                  :color="goal.category?.color"
+                  variant="tonal"
+                >
                   <v-icon start size="14">{{ goal.category?.icon }}</v-icon>
-                  {{ goal.category?.name || 'Geen categorie' }}
+                  {{ goal.category?.name || $t("celebration.noCategory") }}
                 </v-chip>
                 <div class="text-caption text-medium-emphasis mt-2">
-                  Voltooid op {{ formatDate(goal.completed_at) }}
+                  {{
+                    $t("celebration.completedOn", {
+                      date: formatDate(goal.completed_at),
+                    })
+                  }}
                 </div>
               </v-card-text>
             </v-card>
@@ -157,76 +182,93 @@
         border
       >
         <v-icon size="64" color="primary" class="mb-4">mdi-party-popper</v-icon>
-        <h2 class="text-h6 mb-2">Nog geen doelen dit jaar</h2>
-        <p class="text-body-2 text-medium-emphasis">
-          Voeg doelen toe om je reis te beginnen!
-        </p>
+        <h2 class="text-h6 mb-2">{{ $t("celebration.noGoals") }}</h2>
       </v-card>
     </v-container>
   </DefaultLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
-import { useTeams } from '@/composables/useTeams'
-import { useGoals } from '@/composables/useGoals'
+import { ref, computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import DefaultLayout from "@/layouts/DefaultLayout.vue";
+import { useTeams } from "@/composables/useTeams";
+import { useGoals } from "@/composables/useGoals";
+
+const { t } = useI18n();
 
 // Set current year
-const currentYear = ref(new Date().getFullYear())
+const currentYear = ref(new Date().getFullYear());
 
-const { teams } = useTeams()
-const selectedTeamId = ref<string | undefined>(undefined)
+const { teams } = useTeams();
+const selectedTeamId = ref<string | undefined>(undefined);
 
 // Auto-select first team
-watch(teams, (newTeams) => {
-  if (newTeams && newTeams.length > 0 && !selectedTeamId.value) {
-    selectedTeamId.value = newTeams[0]?.id
-  }
-}, { immediate: true })
+watch(
+  teams,
+  (newTeams) => {
+    if (newTeams && newTeams.length > 0 && !selectedTeamId.value) {
+      selectedTeamId.value = newTeams[0]?.id;
+    }
+  },
+  { immediate: true },
+);
 
-const { goals, isLoading } = useGoals(
-  selectedTeamId,
-  currentYear
-)
+const { goals, isLoading } = useGoals(selectedTeamId, currentYear);
 
-const completedGoals = computed(() => 
-  goals.value?.filter(g => g.is_completed) || []
-)
+const completedGoals = computed(
+  () => goals.value?.filter((g) => g.is_completed) || [],
+);
 
-const inProgressGoals = computed(() => 
-  goals.value?.filter(g => !g.is_completed) || []
-)
+const inProgressGoals = computed(
+  () => goals.value?.filter((g) => !g.is_completed) || [],
+);
 
 const completionRate = computed(() => {
-  if (!goals.value || goals.value.length === 0) return 0
-  return Math.round((completedGoals.value.length / goals.value.length) * 100)
-})
+  if (!goals.value || goals.value.length === 0) return 0;
+  return Math.round((completedGoals.value.length / goals.value.length) * 100);
+});
 
 // Group goals by month for timeline
 const months = computed(() => {
-  const monthNames = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec']
-  
+  const monthNames = [
+    t("date.jan"),
+    t("date.feb"),
+    t("date.mar"),
+    t("date.apr"),
+    t("date.may"),
+    t("date.jun"),
+    t("date.jul"),
+    t("date.aug"),
+    t("date.sep"),
+    t("date.oct"),
+    t("date.nov"),
+    t("date.dec"),
+  ];
+
   return monthNames.map((name, index) => {
-    const monthGoals = goals.value?.filter(g => {
-      const date = g.completed_at ? new Date(g.completed_at) : new Date(g.created_at)
-      return date.getMonth() === index
-    }) || []
+    const monthGoals =
+      goals.value?.filter((g) => {
+        const date = g.completed_at
+          ? new Date(g.completed_at)
+          : new Date(g.created_at);
+        return date.getMonth() === index;
+      }) || [];
 
     return {
       name,
       number: index + 1,
-      goals: monthGoals
-    }
-  })
-})
+      goals: monthGoals,
+    };
+  });
+});
 
 function formatDate(dateString: string | null) {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString('nl-NL', {
-    day: 'numeric',
-    month: 'long'
-  })
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "long",
+  });
 }
 </script>
 
@@ -297,7 +339,11 @@ function formatDate(dateString: string | null) {
 }
 
 @keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 </style>
