@@ -246,6 +246,7 @@ export function useGoals(
           is_shared: originalGoal.is_shared,
           is_completed: false,
           completed_at: null,
+          deadline_date: originalGoal.deadline_date,
         })
         .select()
         .single();

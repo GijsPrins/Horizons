@@ -120,6 +120,18 @@
             class="mb-4"
           />
 
+          <!-- Deadline -->
+          <v-text-field
+            v-model="form.deadline_date"
+            :label="$t('goals.deadline')"
+            type="date"
+            prepend-inner-icon="mdi-calendar-alert"
+            clearable
+            class="mb-4"
+            :hint="$t('goals.deadlineHint')"
+            persistent-hint
+          />
+
           <!-- Optional Initial Image -->
           <div class="mt-4">
             <h4 class="text-subtitle-2 mb-2">{{ $t('attachments.addImage') }}</h4>
@@ -190,6 +202,7 @@ const form = reactive<GoalFormData>({
   goal_type: 'single',
   target_count: null,
   is_shared: false,
+  deadline_date: null,
   file: null
 })
 
@@ -243,6 +256,7 @@ watch(isOpen, (open) => {
       form.goal_type = props.goal.goal_type
       form.target_count = props.goal.target_count
       form.is_shared = props.goal.is_shared
+      form.deadline_date = props.goal.deadline_date
       form.file = null
     } else {
       // New goal - reset form
@@ -253,6 +267,7 @@ watch(isOpen, (open) => {
       form.goal_type = 'single'
       form.target_count = null
       form.is_shared = false
+      form.deadline_date = null
       form.file = null
     }
   }

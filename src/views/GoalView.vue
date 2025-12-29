@@ -280,6 +280,20 @@
                   $t("goals.isCompleted")
                 }}</v-list-item-subtitle>
               </v-list-item>
+
+              <v-list-item v-if="goal.deadline_date">
+                <template #prepend>
+                  <v-avatar size="32" color="warning">
+                    <v-icon size="18">mdi-calendar-alert</v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title>{{
+                  formatDate(goal.deadline_date)
+                }}</v-list-item-title>
+                <v-list-item-subtitle>{{
+                  $t("goals.deadline")
+                }}</v-list-item-subtitle>
+              </v-list-item>
             </v-list>
           </v-card>
         </v-col>

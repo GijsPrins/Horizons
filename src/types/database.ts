@@ -128,6 +128,7 @@ export interface Goal {
   is_shared: boolean
   is_completed: boolean
   completed_at: string | null
+  deadline_date: string | null
   created_at: string
 }
 
@@ -194,6 +195,7 @@ export interface GoalFormData {
   goal_type: GoalType
   target_count: number | null
   is_shared: boolean
+  deadline_date: string | null
   file?: File | null
 }
 
