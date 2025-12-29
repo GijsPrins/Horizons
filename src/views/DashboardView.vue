@@ -37,46 +37,20 @@
             />
 
             <!-- Filter -->
-            <v-menu>
-              <template #activator="{ props }">
-                <v-btn
-                  v-bind="props"
-                  variant="outlined"
-                  icon="mdi-filter-variant"
-                  class="d-sm-none"
-                />
-                <v-btn
-                  v-bind="props"
-                  variant="outlined"
-                  class="d-none d-sm-flex"
-                >
-                  <v-icon start>mdi-filter</v-icon>
-                  {{ $t("common.filter") }}
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item @click="filter = 'all'">
-                  <v-list-item-title>{{
-                    $t("goals.filters.all")
-                  }}</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="filter = 'mine'">
-                  <v-list-item-title>{{
-                    $t("goals.filters.mine")
-                  }}</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="filter = 'shared'">
-                  <v-list-item-title>{{
-                    $t("goals.filters.shared")
-                  }}</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="filter = 'completed'">
-                  <v-list-item-title>{{
-                    $t("goals.filters.completed")
-                  }}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+            <SelectMenu
+              v-model="filter"
+              :label="$t('common.filter')"
+              icon="mdi-filter"
+              :options="filterOptions"
+            />
+
+            <!-- Sort -->
+            <SelectMenu
+              v-model="sort"
+              :label="$t('common.sort')"
+              icon="mdi-sort"
+              :options="sortOptions"
+            />
           </div>
         </div>
       </div>
@@ -206,10 +180,12 @@ import { useI18n } from "vue-i18n";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
 import GoalCard from "@/components/goals/GoalCard.vue";
 import GoalDialog from "@/components/goals/GoalDialog.vue";
+import SelectMenu from "@/components/common/SelectMenu.vue";
 import { useTeams } from "@/composables/useTeams";
 import { useGoals } from "@/composables/useGoals";
 import { useCategories } from "@/composables/useCategories";
 import { useAuth } from "@/composables/useAuth";
+import { useDashboardFilters } from "@/composables/useDashboardFilters";
 import type { Goal, GoalWithRelations, GoalFormData } from "@/types/database";
 
 const router = useRouter();
@@ -257,42 +233,33 @@ watch([selectedTeamId, currentYear], () => {
 const { categories } = useCategories(selectedTeamId);
 
 // UI state
-
-const filter = ref<"all" | "mine" | "shared" | "completed">("all");
 const selectedCategoryId = ref<string | null>(null);
 const goalDialogOpen = ref(false);
 const editingGoal = ref<Goal | null>(null);
 
 const isLoading = computed(() => teamsLoading.value || goalsLoading.value);
 
-// Filtered goals
-const filteredGoals = computed(() => {
-  if (!goals.value) return [];
+// Filter and sort
+const { filter, sort, filteredGoals } = useDashboardFilters(
+  goals,
+  user,
+  selectedCategoryId,
+);
 
-  let result = [...goals.value];
+// Filter and sort options
+const filterOptions = computed(() => [
+  { value: "all", label: t("goals.filters.all") },
+  { value: "mine", label: t("goals.filters.mine") },
+  { value: "shared", label: t("goals.filters.shared") },
+  { value: "completed", label: t("goals.filters.completed") },
+  { value: "overdue", label: t("goals.filters.overdue") },
+]);
 
-  // Filter by ownership
-  switch (filter.value) {
-    case "mine":
-      result = result.filter((g) => g.user_id === user.value?.id);
-      break;
-    case "shared":
-      result = result.filter(
-        (g) => g.is_shared && g.user_id !== user.value?.id,
-      );
-      break;
-    case "completed":
-      result = result.filter((g) => g.is_completed);
-      break;
-  }
-
-  // Filter by category
-  if (selectedCategoryId.value) {
-    result = result.filter((g) => g.category_id === selectedCategoryId.value);
-  }
-
-  return result;
-});
+const sortOptions = computed(() => [
+  { value: "created", label: t("goals.sort.created") },
+  { value: "completed", label: t("goals.sort.completed") },
+  { value: "deadline", label: t("goals.sort.deadline") },
+]);
 
 function openGoalDialog(goal?: Goal) {
   editingGoal.value = goal || null;

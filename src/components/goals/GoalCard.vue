@@ -119,46 +119,54 @@
 
       <!-- Goal-specific metadata -->
       <div class="goal-card__metadata text-body-2 text-medium-emphasis">
-        <!-- Weekly goals: show streak -->
-        <div
-          v-if="goal.goal_type === 'weekly'"
-          class="d-flex align-center"
-          style="gap: 6px"
-        >
-          <v-icon size="16" color="orange">mdi-fire</v-icon>
-          <span>
-            {{
-              $t("progress.weeklyCount", {
-                achieved: weeklyAchieved,
-                total: 52,
-                week: $t("progress.weeks", 52),
-              })
-            }}
-          </span>
-        </div>
+        <div class="d-flex flex-column" style="gap: 8px">
+          <!-- Weekly goals: show streak -->
+          <div
+            v-if="goal.goal_type === 'weekly'"
+            class="d-flex align-center"
+            style="gap: 6px"
+          >
+            <v-icon size="16" color="orange">mdi-fire</v-icon>
+            <span>
+              {{
+                $t("progress.weeklyCount", {
+                  achieved: weeklyAchieved,
+                  total: 52,
+                  week: $t("progress.weeks", 52),
+                })
+              }}
+            </span>
+          </div>
 
-        <!-- Milestone goals: show completion ratio -->
-        <div
-          v-else-if="goal.goal_type === 'milestone'"
-          class="d-flex align-center"
-          style="gap: 6px"
-        >
-          <v-icon size="16" :color="categoryColor">mdi-flag-checkered</v-icon>
-          <span>
-            {{
-              $t("progress.milestoneCount", {
-                completed: milestonesCompleted,
-                total: goal.target_count || 0,
-                milestone: $t("attachments.milestones", goal.target_count || 0),
-              })
-            }}
-          </span>
-        </div>
+          <!-- Milestone goals: show completion ratio -->
+          <div
+            v-else-if="goal.goal_type === 'milestone'"
+            class="d-flex align-center"
+            style="gap: 6px"
+          >
+            <v-icon size="16" :color="categoryColor">mdi-flag-checkered</v-icon>
+            <span>
+              {{
+                $t("progress.milestoneCount", {
+                  completed: milestonesCompleted,
+                  total: goal.target_count || 0,
+                  milestone: $t("attachments.milestones", goal.target_count || 0),
+                })
+              }}
+            </span>
+          </div>
 
-        <!-- Single goal: just show year -->
-        <div v-else class="d-flex align-center" style="gap: 6px">
-          <v-icon size="16" :color="categoryColor">mdi-calendar</v-icon>
-          <span>{{ goal.year }}</span>
+          <!-- Single goal: just show year -->
+          <div v-else class="d-flex align-center" style="gap: 6px">
+            <v-icon size="16" :color="categoryColor">mdi-calendar</v-icon>
+            <span>{{ goal.year }}</span>
+          </div>
+
+          <!-- Deadline (if present) -->
+          <div v-if="goal.deadline_date" class="d-flex align-center" style="gap: 6px">
+            <v-icon size="16" color="warning">mdi-calendar-alert</v-icon>
+            <span>{{ formatDate(goal.deadline_date) }}</span>
+          </div>
         </div>
       </div>
     </v-card-text>
@@ -186,6 +194,7 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import type { GoalWithRelations } from "@/types/database";
 import { calculateProgress } from "@/composables/useProgress";
+import { formatDate } from "@/utils/format";
 
 const props = defineProps<{
   goal: GoalWithRelations;

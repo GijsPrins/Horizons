@@ -90,11 +90,19 @@
     "descriptionPlaceholder": "Beschrijf je doel (optioneel)",
     "sharedHint": "Teamleden kunnen dit doel zien",
     "stepsHint": "Hoeveel mijlpalen wil je bereiken?",
+    "deadline": "Deadline",
+    "deadlineHint": "Optionele einddatum voor dit doel",
     "filters": {
       "all": "Alle doelen",
       "mine": "Mijn doelen",
       "shared": "Gedeelde doelen",
-      "completed": "Voltooid"
+      "completed": "Voltooid",
+      "overdue": "Verlopen"
+    },
+    "sort": {
+      "created": "Aanmaakdatum",
+      "completed": "Voltooiingsdatum",
+      "deadline": "Deadline"
     },
     "created": "Doel {title} aangemaakt!",
     "copyToNextYear": "Kopieer naar volgend jaar",
@@ -316,6 +324,7 @@
     "title": "Titel",
     "search": "Zoeken...",
     "filter": "Filter",
+    "sort": "Sorteren",
     "all": "Alle",
     "none": "Geen",
     "yes": "Ja",
