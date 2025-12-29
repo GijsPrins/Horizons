@@ -53,7 +53,7 @@ function applyFilter(
     case "overdue":
       return goals.filter((g) => {
         if (!g.deadline_date || g.is_completed) return false;
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date().toISOString().split("T")[0] as string;
         return g.deadline_date < today;
       });
     case "all":
