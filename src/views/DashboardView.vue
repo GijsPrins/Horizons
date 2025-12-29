@@ -239,10 +239,13 @@ const editingGoal = ref<Goal | null>(null);
 
 const isLoading = computed(() => teamsLoading.value || goalsLoading.value);
 
+// Extract user ID for filters
+const userId = computed(() => user.value?.id);
+
 // Filter and sort
 const { filter, sort, filteredGoals } = useDashboardFilters(
   goals,
-  user,
+  userId,
   selectedCategoryId,
 );
 
