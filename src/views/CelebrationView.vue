@@ -236,10 +236,6 @@ const inProgressGoals = computed(
     goals.value?.filter((g) => !g.is_completed && !g.is_not_completed) || [],
 );
 
-const notCompletedGoals = computed(
-  () => goals.value?.filter((g) => g.is_not_completed) || [],
-);
-
 const completionRate = computed(() => {
   if (!goals.value || goals.value.length === 0) return 0;
   return Math.round((completedGoals.value.length / goals.value.length) * 100);

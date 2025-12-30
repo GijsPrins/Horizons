@@ -543,7 +543,7 @@ function openEditDialog() {
 // Wrappers to deal with possible null goal
 const onToggleComplete = () => goal.value && toggleComplete(goal.value);
 const onConfirmComplete = () => goal.value && confirmToggleComplete(goal.value);
-const onMarkNotCompleted = () => goal.value && markNotCompleted(goal.value);
+const onMarkNotCompleted = () => markNotCompleted();
 const onConfirmNotCompleted = () =>
   goal.value && confirmMarkNotCompleted(goal.value);
 const onUnmarkNotCompleted = () => goal.value && unmarkNotCompleted(goal.value);

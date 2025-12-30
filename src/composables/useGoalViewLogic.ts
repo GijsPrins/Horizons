@@ -64,7 +64,7 @@ export function useGoalViewLogic(
     }
   }
 
-  async function markNotCompleted(goal: Goal) {
+  async function markNotCompleted() {
     notCompletedReason.value = "";
     notCompletedDialogOpen.value = true;
   }

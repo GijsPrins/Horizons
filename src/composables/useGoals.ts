@@ -2,7 +2,7 @@ import { computed, toValue, type MaybeRefOrGetter } from "vue";
 import { useI18n } from "vue-i18n";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { supabase } from "@/plugins/supabase";
-import type { GoalWithRelations, GoalFormData } from "@/types/database";
+import type { GoalWithRelations, GoalFormData, Goal } from "@/types/database";
 import { useAuth } from "./useAuth";
 import { useAttachments } from "./useAttachments";
 
@@ -136,8 +136,10 @@ export function useGoals(
     mutationFn: async ({
       id,
       ...updates
-    }: Partial<GoalFormData> & { id: string }) => {
-      const { file, ...goalUpdates } = updates as any;
+    }: (Partial<Goal> | Partial<GoalFormData>) & { id: string }) => {
+      const { file, ...goalUpdates } = updates as Partial<Goal> & {
+        file?: File;
+      };
       // Omit read-only fields that might be in updates
       const { created_at, user_id, ...validUpdates } = goalUpdates;
 
