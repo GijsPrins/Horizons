@@ -244,7 +244,7 @@ const rules = {
   positiveNumber: (v: number) => v > 0 || t('common.positiveNumber')
 }
 
-// Reset form when dialog opens
+// Reset form when dialog opens/closes
 watch(isOpen, (open) => {
   if (open) {
     if (props.goal) {
@@ -270,6 +270,9 @@ watch(isOpen, (open) => {
       form.deadline_date = null
       form.file = null
     }
+  } else {
+    // Dialog closed - reset submitting state
+    isSubmitting.value = false
   }
 })
 
@@ -282,16 +285,10 @@ async function handleSubmit() {
   if (!valid) return
 
   isSubmitting.value = true
-  try {
-    emit('submit', {
-      ...form,
-      team_id: props.teamId
-    })
-    close()
-  } catch (error: any) {
-    showSnackbar?.(error.message || t('common.error'), 'error')
-  } finally {
-    isSubmitting.value = false
-  }
+  emit('submit', {
+    ...form,
+    team_id: props.teamId
+  })
+  // Note: Dialog will be closed by parent after successful submission
 }
 </script>

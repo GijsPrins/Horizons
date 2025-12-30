@@ -278,8 +278,11 @@ async function handleGoalSubmit(formData: GoalFormData & { team_id: string }) {
       await createGoal(formData);
       showSnackbar?.(t("goals.created", { title: formData.title }), "success");
     }
+    // Close dialog only after successful submission
+    goalDialogOpen.value = false;
   } catch (error: any) {
     showSnackbar?.(error.message || t("common.error"), "error");
+    // Dialog remains open on error so user can retry
   }
 }
 
