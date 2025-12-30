@@ -1,13 +1,11 @@
 <template>
-  <v-dialog
-    v-model="isOpen"
-    max-width="600"
-    persistent
-  >
+  <v-dialog v-model="isOpen" max-width="600" persistent>
     <v-card>
       <v-card-title class="d-flex align-center">
-        <v-icon class="mr-2">{{ isEditing ? 'mdi-pencil' : 'mdi-plus' }}</v-icon>
-        {{ isEditing ? $t('goals.editGoal') : $t('goals.addGoal') }}
+        <v-icon class="mr-2">{{
+          isEditing ? "mdi-pencil" : "mdi-plus"
+        }}</v-icon>
+        {{ isEditing ? $t("goals.editGoal") : $t("goals.addGoal") }}
         <v-spacer />
         <v-btn icon variant="text" @click="close">
           <v-icon>mdi-close</v-icon>
@@ -134,7 +132,9 @@
 
           <!-- Optional Initial Image -->
           <div class="mt-4">
-            <h4 class="text-subtitle-2 mb-2">{{ $t('attachments.addImage') }}</h4>
+            <h4 class="text-subtitle-2 mb-2">
+              {{ $t("attachments.addImage") }}
+            </h4>
             <v-file-input
               v-model="form.file"
               :label="$t('attachments.choosePhoto')"
@@ -154,7 +154,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="close">
-          {{ $t('common.cancel') }}
+          {{ $t("common.cancel") }}
         </v-btn>
         <v-btn
           color="primary"
@@ -162,7 +162,7 @@
           :loading="isSubmitting"
           @click="handleSubmit"
         >
-          {{ isEditing ? $t('common.save') : $t('common.create') }}
+          {{ isEditing ? $t("common.save") : $t("common.create") }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -170,125 +170,125 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed, inject } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { Goal, GoalFormData, Category } from '@/types/database'
+import { ref, reactive, watch, computed, inject } from "vue";
+import { useI18n } from "vue-i18n";
+import type { Goal, GoalFormData, Category } from "@/types/database";
 
-const isOpen = defineModel<boolean>({ required: true })
+const isOpen = defineModel<boolean>({ required: true });
 
 const props = defineProps<{
-  goal?: Goal | null
-  teamId: string
-  categories: Category[]
-}>()
+  goal?: Goal | null;
+  teamId: string;
+  categories: Category[];
+}>();
 
 const emit = defineEmits<{
-  'submit': [formData: GoalFormData & { team_id: string }]
-}>()
+  submit: [formData: GoalFormData & { team_id: string }];
+}>();
 
-const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
-const { t } = useI18n()
+inject<(msg: string, color?: string) => void>("showSnackbar");
+const { t } = useI18n();
 
-const formRef = ref()
-const isSubmitting = ref(false)
+const formRef = ref();
+const isSubmitting = ref(false);
 
-const isEditing = computed(() => !!props.goal)
+const isEditing = computed(() => !!props.goal);
 
 const form = reactive<GoalFormData>({
-  title: '',
-  description: '',
+  title: "",
+  description: "",
   year: new Date().getFullYear() + 1,
   category_id: null,
-  goal_type: 'single',
+  goal_type: "single",
   target_count: null,
   is_shared: false,
   deadline_date: null,
-  file: null
-})
+  file: null,
+});
 
 const yearOptions = computed(() => {
-  const current = new Date().getFullYear()
-  const years = []
+  const current = new Date().getFullYear();
+  const years = [];
   for (let i = 0; i <= 5; i++) {
-    years.push(current + i)
+    years.push(current + i);
   }
-  return years
-})
+  return years;
+});
 
 const goalTypes = computed(() => [
   {
-    value: 'single',
-    label: t('goals.types.single'),
-    icon: 'mdi-flag-checkered',
-    color: 'info',
-    description: t('goals.typeDescriptions.single')
+    value: "single",
+    label: t("goals.types.single"),
+    icon: "mdi-flag-checkered",
+    color: "info",
+    description: t("goals.typeDescriptions.single"),
   },
   {
-    value: 'weekly',
-    label: t('goals.types.weekly'),
-    icon: 'mdi-calendar-week',
-    color: 'warning',
-    description: t('goals.typeDescriptions.weekly')
+    value: "weekly",
+    label: t("goals.types.weekly"),
+    icon: "mdi-calendar-week",
+    color: "warning",
+    description: t("goals.typeDescriptions.weekly"),
   },
   {
-    value: 'milestone',
-    label: t('goals.types.milestone'),
-    icon: 'mdi-stairs',
-    color: 'secondary',
-    description: t('goals.typeDescriptions.milestone')
-  }
-])
+    value: "milestone",
+    label: t("goals.types.milestone"),
+    icon: "mdi-stairs",
+    color: "secondary",
+    description: t("goals.typeDescriptions.milestone"),
+  },
+]);
 
 const rules = {
-  required: (v: any) => !!v || t('common.required'),
-  positiveNumber: (v: number) => v > 0 || t('common.positiveNumber')
-}
+  required: (v: any) => !!v || t("common.required"),
+  positiveNumber: (v: number) => v > 0 || t("common.positiveNumber"),
+};
 
 // Reset form when dialog opens/closes
 watch(isOpen, (open) => {
   if (open) {
     if (props.goal) {
       // Editing - populate form
-      form.title = props.goal.title
-      form.description = props.goal.description || ''
-      form.year = props.goal.year
-      form.category_id = props.goal.category_id
-      form.goal_type = props.goal.goal_type
-      form.target_count = props.goal.target_count
-      form.is_shared = props.goal.is_shared
-      form.deadline_date = props.goal.deadline_date
-      form.file = null
+      form.title = props.goal.title;
+      form.description = props.goal.description || "";
+      form.year = props.goal.year;
+      form.category_id = props.goal.category_id;
+      form.goal_type = props.goal.goal_type;
+      form.target_count = props.goal.target_count;
+      form.is_shared = props.goal.is_shared;
+      form.deadline_date = props.goal.deadline_date;
+      form.file = null;
     } else {
       // New goal - reset form
-      form.title = ''
-      form.description = ''
-      form.year = new Date().getFullYear() + 1
-      form.category_id = null
-      form.goal_type = 'single'
-      form.target_count = null
-      form.is_shared = false
-      form.deadline_date = null
-      form.file = null
+      form.title = "";
+      form.description = "";
+      form.year = new Date().getFullYear() + 1;
+      form.category_id = null;
+      form.goal_type = "single";
+      form.target_count = null;
+      form.is_shared = false;
+      form.deadline_date = null;
+      form.file = null;
     }
   } else {
     // Dialog closed - reset submitting state
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-})
+});
 
 function close() {
-  isOpen.value = false
+  isOpen.value = false;
 }
 
 async function handleSubmit() {
-  const { valid } = await formRef.value.validate()
-  if (!valid) return
+  const { valid } = await formRef.value.validate();
+  if (!valid) return;
 
-  isSubmitting.value = true
-  emit('submit', {
+  isSubmitting.value = true;
+  emit("submit", {
     ...form,
-    team_id: props.teamId
-  })
+    team_id: props.teamId,
+  });
   // Note: Dialog will be closed by parent after successful submission
 }
 </script>
