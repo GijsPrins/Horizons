@@ -63,6 +63,14 @@
     "isCompleted": "Voltooid",
     "markComplete": "Markeer als voltooid",
     "markIncomplete": "Markeer als niet voltooid",
+    "isNotCompleted": "Niet bereikt",
+    "markNotCompleted": "Markeer als niet bereikt",
+    "notCompletedReason": "Reden (optioneel)",
+    "notCompletedReasonPlaceholder": "Waarom is dit doel niet bereikt?",
+    "notCompletedReasonHint": "Je kunt een reden opgeven waarom het doel niet is gelukt",
+    "markedNotCompleted": "Doel gemarkeerd als niet bereikt",
+    "confirmNotCompleted": "Doel markeren als niet bereikt",
+    "notCompletedMessage": "Dit doel kan worden gemarkeerd als niet bereikt. Je kunt eventueel een reden opgeven.",
     "progress": "Voortgang",
     "noGoals": "Nog geen doelen voor dit jaar.",
     "createFirst": "Maak je eerste doel aan!",
@@ -97,7 +105,8 @@
       "mine": "Mijn doelen",
       "shared": "Gedeelde doelen",
       "completed": "Voltooid",
-      "overdue": "Verlopen"
+      "overdue": "Verlopen",
+      "not_completed": "Niet bereikt"
     },
     "sort": {
       "created": "Aanmaakdatum",

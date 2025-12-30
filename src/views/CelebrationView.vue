@@ -110,14 +110,24 @@
                       class="journey-goal"
                       :class="{
                         'journey-goal--completed': goal.is_completed,
-                        'journey-goal--in-progress': !goal.is_completed,
+                        'journey-goal--not-completed': goal.is_not_completed,
+                        'journey-goal--in-progress':
+                          !goal.is_completed && !goal.is_not_completed,
                       }"
                       :style="{
-                        backgroundColor: goal.category?.color || '#607D8B',
+                        backgroundColor: goal.is_not_completed
+                          ? '#757575'
+                          : goal.category?.color || '#607D8B',
                       }"
                     >
                       <v-icon size="16" color="white">
-                        {{ goal.is_completed ? "mdi-check" : "mdi-clock" }}
+                        {{
+                          goal.is_completed
+                            ? "mdi-check"
+                            : goal.is_not_completed
+                              ? "mdi-cancel"
+                              : "mdi-clock"
+                        }}
                       </v-icon>
                     </div>
                   </template>
@@ -222,7 +232,12 @@ const completedGoals = computed(
 );
 
 const inProgressGoals = computed(
-  () => goals.value?.filter((g) => !g.is_completed) || [],
+  () =>
+    goals.value?.filter((g) => !g.is_completed && !g.is_not_completed) || [],
+);
+
+const notCompletedGoals = computed(
+  () => goals.value?.filter((g) => g.is_not_completed) || [],
 );
 
 const completionRate = computed(() => {

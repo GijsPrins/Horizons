@@ -64,18 +64,35 @@
               <!-- Progress -->
               <div class="d-flex align-center mb-4">
                 <v-progress-circular
-                  :model-value="progress"
+                  :model-value="displayProgress"
                   :size="100"
                   :width="8"
-                  :color="progress === 100 ? 'success' : 'primary'"
+                  :color="progressColor"
                 >
-                  <span class="text-h5 font-weight-bold">{{
-                    $t("goals.progressPercentage", { progress })
+                  <span
+                    v-if="goal.is_not_completed"
+                    class="text-h5 font-weight-bold"
+                    >—</span
+                  >
+                  <span v-else class="text-h5 font-weight-bold">{{
+                    $t("goals.progressPercentage", {
+                      progress: displayProgress,
+                    })
                   }}</span>
                 </v-progress-circular>
 
                 <div class="ml-6">
                   <v-chip
+                    v-if="goal.is_not_completed"
+                    color="grey-darken-1"
+                    variant="flat"
+                    class="mb-2"
+                  >
+                    <v-icon start>mdi-cancel</v-icon>
+                    {{ $t("goals.isNotCompleted") }}
+                  </v-chip>
+                  <v-chip
+                    v-else
                     :color="goal.is_completed ? 'success' : 'primary'"
                     variant="flat"
                     class="mb-2"
@@ -91,7 +108,6 @@
                         : $t("celebration.inProgress")
                     }}
                   </v-chip>
-
                   <div class="text-body-2 text-medium-emphasis">
                     {{
                       $t("goals.typeAndYear", {
@@ -109,22 +125,48 @@
 
                 <v-spacer />
 
-                <!-- Complete toggle for single goals -->
-                <v-btn
+                <!-- Action buttons for single goals -->
+                <div
                   v-if="goal.goal_type === 'single' && isOwner"
-                  :color="goal.is_completed ? 'success' : 'primary'"
-                  :variant="goal.is_completed ? 'flat' : 'outlined'"
-                  @click="onToggleComplete"
+                  class="d-flex flex-column"
+                  style="gap: 8px"
                 >
-                  <v-icon start>{{
-                    goal.is_completed ? "mdi-check" : "mdi-flag-checkered"
-                  }}</v-icon>
-                  {{
-                    goal.is_completed
-                      ? $t("goals.isCompleted") + "!"
-                      : $t("goals.markComplete")
-                  }}
-                </v-btn>
+                  <v-btn
+                    v-if="goal.is_not_completed"
+                    color="primary"
+                    variant="outlined"
+                    @click="onUnmarkNotCompleted"
+                  >
+                    <v-icon start>mdi-refresh</v-icon>
+                    {{ $t("goals.reopened") }}
+                  </v-btn>
+                  <template v-else>
+                    <v-btn
+                      :color="goal.is_completed ? 'success' : 'primary'"
+                      :variant="goal.is_completed ? 'flat' : 'outlined'"
+                      @click="onToggleComplete"
+                    >
+                      <v-icon start>{{
+                        goal.is_completed ? "mdi-check" : "mdi-flag-checkered"
+                      }}</v-icon>
+                      {{
+                        goal.is_completed
+                          ? $t("goals.isCompleted") + "!"
+                          : $t("goals.markComplete")
+                      }}
+                    </v-btn>
+                    <v-btn
+                      v-if="!goal.is_completed"
+                      color="grey-darken-1"
+                      variant="outlined"
+                      size="small"
+                      @click="onMarkNotCompleted"
+                    >
+                      <v-icon start size="small">mdi-cancel</v-icon>
+                      {{ $t("goals.markNotCompleted") }}
+                    </v-btn>
+                  </template>
+                </div>
               </div>
 
               <!-- Description -->
@@ -133,6 +175,19 @@
                   {{ $t("goals.goalDescription") }}
                 </h3>
                 <p class="text-body-2">{{ goal.description }}</p>
+              </div>
+
+              <!-- Not completed reason -->
+              <div
+                v-if="goal.is_not_completed && goal.not_completed_reason"
+                class="mb-4"
+              >
+                <h3 class="text-subtitle-2 font-weight-medium mb-2">
+                  {{ $t("goals.notCompletedReason") }}
+                </h3>
+                <p class="text-body-2 text-medium-emphasis">
+                  {{ goal.not_completed_reason }}
+                </p>
               </div>
             </v-card-text>
           </v-card>
@@ -359,6 +414,39 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <!-- Not Completed Dialog -->
+      <v-dialog v-model="notCompletedDialogOpen" max-width="500">
+        <v-card>
+          <v-card-title>{{ $t("goals.confirmNotCompleted") }}</v-card-title>
+          <v-card-text>
+            <p class="mb-4">{{ $t("goals.notCompletedMessage") }}</p>
+            <v-textarea
+              v-model="notCompletedReason"
+              :label="$t('goals.notCompletedReason')"
+              :placeholder="$t('goals.notCompletedReasonPlaceholder')"
+              :hint="$t('goals.notCompletedReasonHint')"
+              persistent-hint
+              rows="3"
+              variant="outlined"
+              prepend-inner-icon="mdi-text"
+            />
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn variant="text" @click="notCompletedDialogOpen = false">{{
+              $t("common.cancel")
+            }}</v-btn>
+            <v-btn
+              color="grey-darken-1"
+              variant="flat"
+              @click="onConfirmNotCompleted"
+            >
+              {{ $t("common.confirm") }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-container>
   </DefaultLayout>
 </template>
@@ -401,8 +489,13 @@ const {
   goalDialogOpen,
   completionDialogOpen,
   completionDate,
+  notCompletedDialogOpen,
+  notCompletedReason,
   toggleComplete,
   confirmToggleComplete,
+  markNotCompleted,
+  confirmMarkNotCompleted,
+  unmarkNotCompleted,
   handleWeekToggle,
   addMilestone,
   toggleMilestone,
@@ -419,6 +512,19 @@ const isOwner = computed(() => goal.value?.user_id === user.value?.id);
 const progress = computed(() =>
   goal.value ? calculateProgress(goal.value) : 0,
 );
+
+// Display progress handles the special case of not_completed (-1)
+const displayProgress = computed(() => {
+  const prog = progress.value;
+  return prog === -1 ? 0 : prog;
+});
+
+// Progress color changes based on status
+const progressColor = computed(() => {
+  if (goal.value?.is_not_completed) return "grey-darken-1";
+  if (goal.value?.is_completed) return "success";
+  return "primary";
+});
 
 const typeLabel = computed(() => {
   const type = goal.value?.goal_type || "single";
@@ -437,6 +543,10 @@ function openEditDialog() {
 // Wrappers to deal with possible null goal
 const onToggleComplete = () => goal.value && toggleComplete(goal.value);
 const onConfirmComplete = () => goal.value && confirmToggleComplete(goal.value);
+const onMarkNotCompleted = () => goal.value && markNotCompleted(goal.value);
+const onConfirmNotCompleted = () =>
+  goal.value && confirmMarkNotCompleted(goal.value);
+const onUnmarkNotCompleted = () => goal.value && unmarkNotCompleted(goal.value);
 const onDelete = () => goal.value && handleDelete(goal.value);
 const onGoalSubmit = (data: GoalFormData & { team_id: string }) =>
   goal.value && handleGoalSubmit(goal.value, data);

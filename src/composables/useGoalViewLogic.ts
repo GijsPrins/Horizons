@@ -32,6 +32,8 @@ export function useGoalViewLogic(
   const goalDialogOpen = ref(false);
   const completionDialogOpen = ref(false);
   const completionDate = ref<Date>(new Date());
+  const notCompletedDialogOpen = ref(false);
+  const notCompletedReason = ref<string>("");
 
   // Actions
   async function toggleComplete(goal: Goal) {
@@ -57,6 +59,42 @@ export function useGoalViewLogic(
       });
       completionDialogOpen.value = false;
       showSnackbar?.(t("goals.completed"), "success");
+    } catch (error: any) {
+      showSnackbar?.(error.message || t("common.error"), "error");
+    }
+  }
+
+  async function markNotCompleted(goal: Goal) {
+    notCompletedReason.value = "";
+    notCompletedDialogOpen.value = true;
+  }
+
+  async function confirmMarkNotCompleted(goal: Goal) {
+    try {
+      await updateMutation({
+        id: goal.id,
+        is_not_completed: true,
+        not_completed_reason: notCompletedReason.value || null,
+        not_completed_at: new Date().toISOString(),
+        is_completed: false,
+        completed_at: null,
+      });
+      notCompletedDialogOpen.value = false;
+      showSnackbar?.(t("goals.markedNotCompleted"), "info");
+    } catch (error: any) {
+      showSnackbar?.(error.message || t("common.error"), "error");
+    }
+  }
+
+  async function unmarkNotCompleted(goal: Goal) {
+    try {
+      await updateMutation({
+        id: goal.id,
+        is_not_completed: false,
+        not_completed_reason: null,
+        not_completed_at: null,
+      });
+      showSnackbar?.(t("goals.reopened"), "success");
     } catch (error: any) {
       showSnackbar?.(error.message || t("common.error"), "error");
     }
@@ -195,8 +233,13 @@ export function useGoalViewLogic(
     goalDialogOpen,
     completionDialogOpen,
     completionDate,
+    notCompletedDialogOpen,
+    notCompletedReason,
     toggleComplete,
     confirmToggleComplete,
+    markNotCompleted,
+    confirmMarkNotCompleted,
+    unmarkNotCompleted,
     handleWeekToggle,
     addMilestone,
     toggleMilestone,

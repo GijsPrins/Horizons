@@ -1,7 +1,13 @@
 import { ref, computed, type Ref } from "vue";
 import type { GoalWithRelations } from "@/types/database";
 
-export type FilterType = "all" | "mine" | "shared" | "completed" | "overdue";
+export type FilterType =
+  | "all"
+  | "mine"
+  | "shared"
+  | "completed"
+  | "overdue"
+  | "not_completed";
 export type SortType = "created" | "completed" | "deadline";
 
 export function useDashboardFilters(
@@ -50,9 +56,12 @@ function applyFilter(
       return goals.filter((g) => g.is_shared && g.user_id !== userId);
     case "completed":
       return goals.filter((g) => g.is_completed);
+    case "not_completed":
+      return goals.filter((g) => g.is_not_completed);
     case "overdue":
       return goals.filter((g) => {
-        if (!g.deadline_date || g.is_completed) return false;
+        if (!g.deadline_date || g.is_completed || g.is_not_completed)
+          return false;
         const today = new Date().toISOString().split("T")[0] as string;
         return g.deadline_date < today;
       });

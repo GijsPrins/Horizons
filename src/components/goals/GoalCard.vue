@@ -16,20 +16,28 @@
         <!-- Large progress circle with category color -->
         <div class="flex-shrink-0 mr-4 goal-card__progress-wrapper">
           <v-progress-circular
-            :model-value="progress"
+            :model-value="displayProgress"
             :size="88"
             :width="6"
-            :color="categoryColor"
+            :color="progressColor"
             class="goal-card__progress"
           >
             <div class="d-flex flex-column align-center">
+              <span
+                v-if="goal.is_not_completed"
+                class="text-h6 font-weight-bold"
+                >—</span
+              >
               <i18n-t
+                v-else
                 keypath="goals.progressPercentage"
                 tag="div"
                 class="d-flex flex-column align-center"
               >
                 <template #progress>
-                  <span class="text-h6 font-weight-bold">{{ progress }}</span>
+                  <span class="text-h6 font-weight-bold">{{
+                    displayProgress
+                  }}</span>
                 </template>
               </i18n-t>
             </div>
@@ -44,7 +52,16 @@
             style="gap: 6px"
           >
             <v-chip
-              v-if="goal.is_completed"
+              v-if="goal.is_not_completed"
+              size="small"
+              color="grey-darken-1"
+              variant="flat"
+              :title="goal.not_completed_reason || $t('goals.isNotCompleted')"
+            >
+              <v-icon size="16">mdi-cancel</v-icon>
+            </v-chip>
+            <v-chip
+              v-else-if="goal.is_completed"
               size="small"
               color="success"
               variant="flat"
@@ -98,7 +115,17 @@
 
         <!-- Status indicators (mobile only) -->
         <v-chip
-          v-if="goal.is_completed"
+          v-if="goal.is_not_completed"
+          size="small"
+          color="grey-darken-1"
+          variant="flat"
+          class="goal-card__status-mobile"
+          :title="goal.not_completed_reason || $t('goals.isNotCompleted')"
+        >
+          <v-icon size="16">mdi-cancel</v-icon>
+        </v-chip>
+        <v-chip
+          v-else-if="goal.is_completed"
           size="small"
           color="success"
           variant="flat"
@@ -150,7 +177,10 @@
                 $t("progress.milestoneCount", {
                   completed: milestonesCompleted,
                   total: goal.target_count || 0,
-                  milestone: $t("attachments.milestones", goal.target_count || 0),
+                  milestone: $t(
+                    "attachments.milestones",
+                    goal.target_count || 0,
+                  ),
                 })
               }}
             </span>
@@ -163,7 +193,11 @@
           </div>
 
           <!-- Deadline (if present) -->
-          <div v-if="goal.deadline_date" class="d-flex align-center" style="gap: 6px">
+          <div
+            v-if="goal.deadline_date"
+            class="d-flex align-center"
+            style="gap: 6px"
+          >
             <v-icon size="16" color="warning">mdi-calendar-alert</v-icon>
             <span>{{ formatDate(goal.deadline_date) }}</span>
           </div>
@@ -207,6 +241,19 @@ defineEmits<{
 const { t } = useI18n();
 
 const progress = computed(() => calculateProgress(props.goal));
+
+// Display progress handles the special case of not_completed (-1)
+const displayProgress = computed(() => {
+  const prog = progress.value;
+  return prog === -1 ? 0 : prog;
+});
+
+// Progress color changes based on status
+const progressColor = computed(() => {
+  if (props.goal.is_not_completed) return "grey-darken-1";
+  if (props.goal.is_completed) return "success";
+  return categoryColor.value;
+});
 
 const categoryColor = computed(() => props.goal.category?.color || "#607D8B");
 

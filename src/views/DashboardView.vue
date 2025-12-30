@@ -255,6 +255,7 @@ const filterOptions = computed(() => [
   { value: "mine", label: t("goals.filters.mine") },
   { value: "shared", label: t("goals.filters.shared") },
   { value: "completed", label: t("goals.filters.completed") },
+  { value: "not_completed", label: t("goals.filters.not_completed") },
   { value: "overdue", label: t("goals.filters.overdue") },
 ]);
 
