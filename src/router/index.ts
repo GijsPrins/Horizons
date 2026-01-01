@@ -58,6 +58,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/feedback",
+      name: "feedback",
+      component: () => import("@/views/FeedbackListView.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: "/feedback/:id",
+      name: "feedback-detail",
+      component: () => import("@/views/FeedbackDetailView.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/settings",
       name: "settings",
       component: () => import("@/views/SettingsView.vue"),
@@ -67,6 +79,12 @@ const router = createRouter({
       path: "/admin",
       name: "admin",
       component: () => import("@/views/AdminView.vue"),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: "/year-review",
+      name: "year-review",
+      component: () => import("@/views/YearReviewView.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {

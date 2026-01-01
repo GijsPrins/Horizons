@@ -18,9 +18,35 @@
 
       <v-spacer />
 
-
-
-
+      <!-- Feedback button -->
+      <v-menu v-if="isAuthenticated" location="bottom">
+        <template #activator="{ props }">
+          <v-btn
+            v-bind="props"
+            icon
+            variant="text"
+          >
+            <v-icon color="grey">mdi-message-alert</v-icon>
+            <v-tooltip activator="parent" location="bottom">
+              {{ $t('feedback.title') }}
+            </v-tooltip>
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item @click="openFeedbackDialog('bug')">
+            <template #prepend>
+              <v-icon color="error">mdi-bug</v-icon>
+            </template>
+            <v-list-item-title>{{ $t('feedback.submitBug') }}</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="openFeedbackDialog('feature')">
+            <template #prepend>
+              <v-icon color="secondary">mdi-lightbulb</v-icon>
+            </template>
+            <v-list-item-title>{{ $t('feedback.submitFeature') }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
 
       <!-- User menu -->
       <v-menu v-if="isAuthenticated">
@@ -103,6 +129,19 @@
           :title="$t('nav.history')"
           :active="$route.name === 'history'"
         />
+        <v-list-item
+          :to="{ name: 'feedback' }"
+          prepend-icon="mdi-message-alert"
+          :title="$t('nav.feedback')"
+          :active="$route.name === 'feedback' || $route.name === 'feedback-detail'"
+        />
+        <v-list-item
+          v-if="isAdmin"
+          :to="{ name: 'year-review' }"
+          prepend-icon="mdi-presentation-play"
+          :title="$t('nav.yearReview')"
+          :active="$route.name === 'year-review'"
+        />
       </v-list>
 
       <template #append>
@@ -120,23 +159,58 @@
     <v-main>
       <slot />
     </v-main>
+
+    <!-- Feedback Dialog -->
+    <FeedbackDialog
+      v-if="isAuthenticated"
+      v-model="feedbackDialogOpen"
+      :initial-type="feedbackType"
+      @submit="handleFeedbackSubmit"
+    />
   </v-app>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
+import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
+import { useFeedback } from '@/composables/useFeedback'
+import FeedbackDialog from '@/components/feedback/FeedbackDialog.vue'
+import type { FeedbackType } from '@/types/database'
 
 const { isAuthenticated, isAdmin, profile, logout } = useAuth()
+const { createFeedback } = useFeedback()
+const { t } = useI18n()
 const route = useRoute()
 const { mobile } = useDisplay()
+
+const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
 
 const logoPath = `${import.meta.env.BASE_URL}favicon.png`
 
 const drawer = ref(!mobile.value)
 const rail = ref(false)
+
+// Feedback dialog state
+const feedbackDialogOpen = ref(false)
+const feedbackType = ref<FeedbackType>('bug')
+
+function openFeedbackDialog(type: FeedbackType) {
+  feedbackType.value = type
+  feedbackDialogOpen.value = true
+}
+
+async function handleFeedbackSubmit(formData: any) {
+  try {
+    await createFeedback(formData)
+    showSnackbar?.(t('feedback.messages.submitted'), 'success')
+    feedbackDialogOpen.value = false
+  } catch (error: any) {
+    showSnackbar?.(error.message || t('common.error'), 'error')
+  }
+}
 
 // Auto-collapse drawer on mobile after navigation
 watch(() => route.path, () => {

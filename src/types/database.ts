@@ -47,6 +47,16 @@ export type Database = {
         Insert: AttachmentInsert;
         Update: AttachmentUpdate;
       };
+      feedback_reports: {
+        Row: FeedbackReport;
+        Insert: FeedbackReportInsert;
+        Update: FeedbackReportUpdate;
+      };
+      feedback_comments: {
+        Row: FeedbackComment;
+        Insert: FeedbackCommentInsert;
+        Update: FeedbackCommentUpdate;
+      };
     };
     Views: {
       [_ in never]: never;
@@ -169,6 +179,48 @@ export interface Attachment {
 export type AttachmentInsert = Omit<Attachment, "id" | "created_at">;
 export type AttachmentUpdate = Partial<Omit<Attachment, "id" | "created_at">>;
 
+export type FeedbackType = "bug" | "feature";
+export type FeedbackStatus = "open" | "in_progress" | "resolved" | "closed";
+export type FeedbackPriority = "low" | "medium" | "high" | "critical";
+
+export interface FeedbackReport {
+  id: string;
+  user_id: string;
+  type: FeedbackType;
+  status: FeedbackStatus;
+  priority: FeedbackPriority;
+  title: string;
+  description: string;
+  current_url: string | null;
+  screenshot_url: string | null;
+  browser_info: string | null;
+  created_at: string;
+  updated_at: string;
+  resolved_at: string | null;
+}
+
+export type FeedbackReportInsert = Omit<
+  FeedbackReport,
+  "id" | "created_at" | "updated_at"
+>;
+export type FeedbackReportUpdate = Partial<
+  Omit<FeedbackReport, "id" | "created_at" | "updated_at">
+>;
+
+export interface FeedbackComment {
+  id: string;
+  report_id: string;
+  user_id: string;
+  comment: string;
+  is_admin_comment: boolean;
+  created_at: string;
+}
+
+export type FeedbackCommentInsert = Omit<FeedbackComment, "id" | "created_at">;
+export type FeedbackCommentUpdate = Partial<
+  Omit<FeedbackComment, "id" | "created_at">
+>;
+
 // ============================================
 // Extended Types (with relations)
 // ============================================
@@ -186,6 +238,12 @@ export interface TeamWithMembers extends Team {
 
 export interface CategoryWithCount extends Category {
   goals_count?: number;
+}
+
+export interface FeedbackReportWithRelations extends FeedbackReport {
+  profile?: Profile;
+  comments?: (FeedbackComment & { profile?: Profile })[];
+  comments_count?: number;
 }
 
 // ============================================
@@ -222,6 +280,15 @@ export interface AttachmentFormData {
   url?: string | null;
   content?: string | null;
   milestone_date?: string | null;
+}
+
+export interface FeedbackFormData {
+  type: FeedbackType;
+  title: string;
+  description: string;
+  priority: FeedbackPriority;
+  screenshot?: Blob | null;
+  use_case?: string; // For feature requests
 }
 
 // ============================================

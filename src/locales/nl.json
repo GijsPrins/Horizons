@@ -14,6 +14,8 @@
     "teams": "Teams",
     "celebration": "Viering",
     "history": "Geschiedenis",
+    "feedback": "Feedback",
+    "yearReview": "Jaar Review",
     "settings": "Instellingen",
     "admin": "Beheer",
     "logout": "Uitloggen",
@@ -246,6 +248,18 @@
     "selectTeamHelp": "Je moet eerst een team selecteren of aanmaken om doelen te kunnen beheren.",
     "toTeams": "Naar teams"
   },
+  "yearReview": {
+    "title": "Jaar Review",
+    "description": "Bekijk alle behaalde doelen van het team in een feestelijke slideshow",
+    "selectTeam": "Selecteer team",
+    "selectYear": "Selecteer jaar",
+    "startSlideshow": "Start Slideshow",
+    "noCompletedGoals": "Geen voltooide gedeelde doelen voor dit jaar",
+    "completedGoalsCount": "{count} doelen om te vieren",
+    "slideOf": "{current} van {total}",
+    "pressEscToExit": "Druk op ESC om te sluiten",
+    "completedOn": "Voltooid op {date}"
+  },
   "celebration": {
     "title": "Jaarviering ({year})",
     "journey": "Jouw reis door {year}",
@@ -316,6 +330,71 @@
     "categoryDeleted": "Categorie verwijderd",
     "confirmDeleteCategory": "Weet je zeker dat je \"{name}\" wilt verwijderen?"
   },
+  "feedback": {
+    "title": "Feedback",
+    "myFeedback": "Mijn feedback",
+    "subtitle": "Meld bugs of vraag nieuwe features aan",
+    "submitBug": "Bug melden",
+    "submitFeature": "Feature aanvragen",
+    "bugReport": "Bug Report",
+    "featureReport": "Feature Request",
+    "form": {
+      "title": "Titel",
+      "titlePlaceholder": "Korte beschrijving van het probleem of verzoek",
+      "description": "Beschrijving",
+      "descriptionPlaceholder": "Beschrijf het probleem of feature in detail...",
+      "priority": "Prioriteit",
+      "useCase": "Gebruik scenario",
+      "useCasePlaceholder": "Hoe zou deze feature je helpen?",
+      "screenshot": "Screenshot",
+      "retakeScreenshot": "Opnieuw vastleggen",
+      "currentUrl": "Huidige pagina",
+      "browserInfo": "Browser informatie"
+    },
+    "priority": {
+      "low": "Laag",
+      "medium": "Gemiddeld",
+      "high": "Hoog",
+      "critical": "Kritiek"
+    },
+    "status": {
+      "open": "Open",
+      "in_progress": "In behandeling",
+      "resolved": "Opgelost",
+      "closed": "Gesloten"
+    },
+    "filters": {
+      "all": "Alle",
+      "bugs": "Bugs",
+      "features": "Features",
+      "byStatus": "Op status"
+    },
+    "messages": {
+      "submitted": "Feedback verzonden! We nemen dit in behandeling.",
+      "commentAdded": "Reactie toegevoegd",
+      "noFeedback": "Nog geen feedback verzonden",
+      "noFeedbackDescription": "Meld bugs of vraag nieuwe features aan met de feedback knop!",
+      "capturingScreenshot": "Screenshot vastleggen...",
+      "screenshotCaptured": "Screenshot vastgelegd",
+      "screenshotFailed": "Screenshot vastleggen mislukt",
+      "screenshotComingSoon": "Screenshots worden binnenkort automatisch toegevoegd voor bug reports."
+    },
+    "detail": {
+      "reportedOn": "Gemeld op {date}",
+      "lastUpdated": "Laatst bijgewerkt op {date}",
+      "resolvedOn": "Opgelost op {date}",
+      "addComment": "Reactie toevoegen",
+      "commentPlaceholder": "Schrijf een reactie...",
+      "comments": "Reacties",
+      "noComments": "Nog geen reacties",
+      "metadata": "Technische informatie",
+      "viewScreenshot": "Bekijk screenshot"
+    },
+    "types": {
+      "bug": "Bug",
+      "feature": "Feature"
+    }
+  },
   "common": {
     "save": "Opslaan",
     "cancel": "Annuleren",
@@ -323,12 +402,15 @@
     "edit": "Bewerken",
     "add": "Toevoegen",
     "create": "Aanmaken",
+    "submit": "Verzenden",
     "close": "Sluiten",
     "confirm": "Bevestigen",
     "loading": "Laden...",
     "error": "Er is een fout opgetreden.",
     "success": "Gelukt!",
     "required": "Dit veld is verplicht.",
+    "minLength": "Minimaal {count} tekens",
+    "maxLength": "Maximaal {count} tekens",
     "optional": "Optioneel",
     "title": "Titel",
     "search": "Zoeken...",
