@@ -237,7 +237,14 @@ const selectedCategoryId = ref<string | null>(null);
 const goalDialogOpen = ref(false);
 const editingGoal = ref<Goal | null>(null);
 
-const isLoading = computed(() => teamsLoading.value || goalsLoading.value);
+const isLoading = computed(() => {
+  // Only show loading for goals if we have a team selected
+  if (selectedTeamId.value) {
+    return teamsLoading.value || goalsLoading.value;
+  }
+  // If no team selected, only show loading for teams
+  return teamsLoading.value;
+});
 
 // Extract user ID for filters
 const userId = computed(() => user.value?.id);

@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from "vue";
+import { ref, computed, watch, type Ref } from "vue";
 import type { GoalWithRelations } from "@/types/database";
 
 export type FilterType =
@@ -10,13 +10,29 @@ export type FilterType =
   | "not_completed";
 export type SortType = "created" | "completed" | "deadline";
 
+const FILTER_STORAGE_KEY = "horizons_dashboard_filter";
+const SORT_STORAGE_KEY = "horizons_dashboard_sort";
+
 export function useDashboardFilters(
   goals: Ref<GoalWithRelations[] | undefined>,
   userId: Ref<string | undefined>,
   selectedCategoryId: Ref<string | null>,
 ) {
-  const filter = ref<FilterType>("all");
-  const sort = ref<SortType>("created");
+  // Load from localStorage
+  const savedFilter = localStorage.getItem(FILTER_STORAGE_KEY) as FilterType | null;
+  const savedSort = localStorage.getItem(SORT_STORAGE_KEY) as SortType | null;
+
+  const filter = ref<FilterType>(savedFilter && isValidFilter(savedFilter) ? savedFilter : "all");
+  const sort = ref<SortType>(savedSort && isValidSort(savedSort) ? savedSort : "created");
+
+  // Watch and persist changes
+  watch(filter, (newFilter) => {
+    localStorage.setItem(FILTER_STORAGE_KEY, newFilter);
+  });
+
+  watch(sort, (newSort) => {
+    localStorage.setItem(SORT_STORAGE_KEY, newSort);
+  });
 
   const filteredGoals = computed(() => {
     if (!goals.value) return [];
@@ -108,4 +124,12 @@ function applySort(
   }
 
   return sorted;
+}
+
+function isValidFilter(value: string): value is FilterType {
+  return ["all", "mine", "shared", "completed", "overdue", "not_completed"].includes(value);
+}
+
+function isValidSort(value: string): value is SortType {
+  return ["created", "completed", "deadline"].includes(value);
 }

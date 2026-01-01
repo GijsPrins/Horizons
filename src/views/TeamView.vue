@@ -42,7 +42,7 @@
           <v-card elevation="0" border>
             <v-card-title>
               <v-icon start>mdi-account-group</v-icon>
-              {{ $t("teams.members") }}
+              {{ $t("teams.members", team.team_members?.length || 0) }}
             </v-card-title>
             <v-list>
               <v-list-item v-for="member in team.team_members" :key="member.id">

@@ -128,42 +128,45 @@
                 <!-- Action buttons for single goals -->
                 <div
                   v-if="goal.goal_type === 'single' && isOwner"
-                  class="d-flex flex-column"
+                  class="d-flex flex-column goal-actions"
                   style="gap: 8px"
                 >
                   <v-btn
                     v-if="goal.is_not_completed"
                     color="primary"
                     variant="outlined"
+                    class="goal-action-btn"
                     @click="onUnmarkNotCompleted"
                   >
                     <v-icon start>mdi-refresh</v-icon>
-                    {{ $t("goals.reopened") }}
+                    <span class="d-none d-sm-inline">{{ $t("goals.reopened") }}</span>
                   </v-btn>
                   <template v-else>
                     <v-btn
                       :color="goal.is_completed ? 'success' : 'primary'"
                       :variant="goal.is_completed ? 'flat' : 'outlined'"
+                      class="goal-action-btn"
                       @click="onToggleComplete"
                     >
                       <v-icon start>{{
                         goal.is_completed ? "mdi-check" : "mdi-flag-checkered"
                       }}</v-icon>
-                      {{
+                      <span class="d-none d-sm-inline">{{
                         goal.is_completed
                           ? $t("goals.isCompleted") + "!"
                           : $t("goals.markComplete")
-                      }}
+                      }}</span>
                     </v-btn>
                     <v-btn
                       v-if="!goal.is_completed"
                       color="grey-darken-1"
                       variant="outlined"
                       size="small"
+                      class="goal-action-btn"
                       @click="onMarkNotCompleted"
                     >
                       <v-icon start size="small">mdi-cancel</v-icon>
-                      {{ $t("goals.markNotCompleted") }}
+                      <span class="d-none d-sm-inline">{{ $t("goals.markNotCompleted") }}</span>
                     </v-btn>
                   </template>
                 </div>
@@ -391,16 +394,24 @@
       />
 
       <!-- Completion Date Dialog -->
-      <v-dialog v-model="completionDialogOpen" max-width="400">
+      <v-dialog v-model="completionDialogOpen" max-width="400" :fullscreen="$vuetify.display.xs">
         <v-card>
-          <v-card-title>{{ $t("goals.completeGoal") }}</v-card-title>
-          <v-card-text>
+          <v-card-title class="d-flex align-center">
+            {{ $t("goals.completeGoal") }}
+            <v-spacer />
+            <v-btn v-if="$vuetify.display.xs" icon variant="text" @click="completionDialogOpen = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-card-title>
+          <v-divider />
+          <v-card-text class="completion-dialog-content">
             <p class="mb-4">{{ $t("goals.congrats") }}</p>
             <v-date-picker
               v-model="completionDate"
               color="primary"
               hide-header
-              class="mx-auto"
+              width="100%"
+              class="completion-date-picker"
             />
           </v-card-text>
           <v-card-actions>
@@ -569,3 +580,28 @@ const onUpdateMilestone = (id: string, note: string) =>
 const onDeleteMilestone = (id: string) => deleteMilestone(id, refetch);
 const onCopyToNextYear = () => goal.value && handleCopyToNextYear(goal.value);
 </script>
+
+<style scoped>
+@media (max-width: 600px) {
+  .goal-actions {
+    width: 100%;
+  }
+
+  .goal-action-btn {
+    min-width: 48px !important;
+    padding: 0 12px !important;
+  }
+
+  .goal-action-btn :deep(.v-btn__content) {
+    justify-content: center;
+  }
+
+  .completion-dialog-content {
+    padding: 16px !important;
+  }
+
+  .completion-date-picker :deep(.v-date-picker) {
+    max-width: 100% !important;
+  }
+}
+</style>

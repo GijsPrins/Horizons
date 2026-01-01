@@ -10,10 +10,10 @@
       <v-btn
         v-bind="props"
         variant="outlined"
-        class="d-none d-sm-flex"
+        class="d-none d-sm-flex select-menu-btn"
       >
         <v-icon start>{{ icon }}</v-icon>
-        {{ label }}
+        <span class="text-truncate">{{ selectedLabel }}</span>
       </v-btn>
     </template>
     <v-list density="compact">
@@ -33,12 +33,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+
 export interface SelectOption {
   value: string
   label: string
 }
 
-defineProps<{
+const props = defineProps<{
   modelValue: string
   label: string
   icon: string
@@ -48,4 +50,21 @@ defineProps<{
 defineEmits<{
   'update:modelValue': [value: string]
 }>()
+
+const selectedLabel = computed(() => {
+  const selected = props.options.find(opt => opt.value === props.modelValue);
+  return selected?.label || props.label;
+});
 </script>
+
+<style scoped>
+.select-menu-btn {
+  max-width: 200px;
+}
+
+.select-menu-btn .text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
