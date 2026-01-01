@@ -19,7 +19,7 @@
           :items="teams"
           item-title="name"
           item-value="id"
-          label="$t('celebration.team')"
+          :label="$t('celebration.team')"
           density="compact"
           hide-details
           variant="outlined"
