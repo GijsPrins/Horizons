@@ -36,7 +36,7 @@
 
             <!-- Team selector -->
             <v-select
-              v-if="teams && teams.length > 0"
+              v-if="teams && teams.length > 1"
               v-model="selectedTeamId"
               :items="teams"
               item-title="name"
