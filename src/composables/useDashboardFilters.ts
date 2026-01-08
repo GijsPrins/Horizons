@@ -17,6 +17,7 @@ export function useDashboardFilters(
   goals: Ref<GoalWithRelations[] | undefined>,
   userId: Ref<string | undefined>,
   selectedCategoryId: Ref<string | null>,
+  searchQuery?: Ref<string>,
 ) {
   // Load from localStorage
   const savedFilter = localStorage.getItem(FILTER_STORAGE_KEY) as FilterType | null;
@@ -38,6 +39,18 @@ export function useDashboardFilters(
     if (!goals.value) return [];
 
     let result = [...goals.value];
+
+    // Apply search
+    if (searchQuery?.value) {
+      const query = searchQuery.value.toLowerCase().trim();
+      if (query) {
+        result = result.filter(
+          (g) =>
+            g.title.toLowerCase().includes(query) ||
+            g.description?.toLowerCase().includes(query),
+        );
+      }
+    }
 
     // Apply filter
     result = applyFilter(result, filter.value, userId.value);
