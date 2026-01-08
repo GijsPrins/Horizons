@@ -1,35 +1,35 @@
 <template>
   <DefaultLayout>
     <v-container fluid class="pa-4">
-      <div class="d-flex align-center mb-6">
-        <h1 class="text-h4 font-weight-bold">{{ $t('history.title') }}</h1>
-        <v-spacer />
-        
-        <!-- Team Selector -->
-        <v-select
-          v-if="teams && teams.length > 0"
-          v-model="selectedTeamId"
-          :items="teams"
-          item-title="name"
-          item-value="id"
-          :label="$t('teams.title')"
-          density="compact"
-          hide-details
-          variant="outlined"
-          style="max-width: 200px"
-          class="mr-4"
-        />
+      <div class="history-header mb-6">
+        <h1 class="text-h4 font-weight-bold mb-4 mb-sm-0">{{ $t('history.title') }}</h1>
 
-        <!-- Year selector -->
-        <v-select
-          v-model="selectedYear"
-          :items="availableYears"
-          :label="$t('goals.goalYear')"
-          density="compact"
-          hide-details
-          variant="outlined"
-          style="max-width: 120px"
-        />
+        <div class="history-selectors">
+          <!-- Team Selector -->
+          <v-select
+            v-if="teams && teams.length > 0"
+            v-model="selectedTeamId"
+            :items="teams"
+            item-title="name"
+            item-value="id"
+            :label="$t('teams.title')"
+            density="compact"
+            hide-details
+            variant="outlined"
+            class="history-selector"
+          />
+
+          <!-- Year selector -->
+          <v-select
+            v-model="selectedYear"
+            :items="availableYears"
+            :label="$t('goals.goalYear')"
+            density="compact"
+            hide-details
+            variant="outlined"
+            class="history-selector"
+          />
+        </div>
       </div>
 
       <!-- Loading state -->
@@ -129,3 +129,41 @@ function navigateToGoal(goal: GoalWithRelations) {
   router.push({ name: 'goal', params: { id: goal.id } })
 }
 </script>
+
+<style scoped>
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.history-selectors {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.history-selector {
+  min-width: 140px;
+  max-width: 200px;
+}
+
+@media (max-width: 600px) {
+  .history-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .history-selectors {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .history-selector {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+</style>

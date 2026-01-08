@@ -146,15 +146,15 @@
 
       <!-- Goal-specific metadata -->
       <div class="goal-card__metadata text-body-2 text-medium-emphasis">
-        <div class="d-flex flex-column" style="gap: 8px">
+        <div class="d-flex flex-column goal-card__metadata-items" style="gap: 8px">
           <!-- Weekly goals: show streak -->
           <div
             v-if="goal.goal_type === 'weekly'"
-            class="d-flex align-center"
+            class="d-flex align-center goal-card__metadata-item"
             style="gap: 6px"
           >
-            <v-icon size="16" color="orange">mdi-fire</v-icon>
-            <span>
+            <v-icon size="16" color="orange" class="flex-shrink-0">mdi-fire</v-icon>
+            <span class="text-truncate">
               {{
                 $t("progress.weeklyCount", {
                   achieved: weeklyAchieved,
@@ -168,11 +168,11 @@
           <!-- Milestone goals: show completion ratio -->
           <div
             v-else-if="goal.goal_type === 'milestone'"
-            class="d-flex align-center"
+            class="d-flex align-center goal-card__metadata-item"
             style="gap: 6px"
           >
-            <v-icon size="16" :color="categoryColor">mdi-flag-checkered</v-icon>
-            <span>
+            <v-icon size="16" :color="categoryColor" class="flex-shrink-0">mdi-flag-checkered</v-icon>
+            <span class="text-truncate">
               {{
                 $t("progress.milestoneCount", {
                   completed: milestonesCompleted,
@@ -187,19 +187,19 @@
           </div>
 
           <!-- Single goal: just show year -->
-          <div v-else class="d-flex align-center" style="gap: 6px">
-            <v-icon size="16" :color="categoryColor">mdi-calendar</v-icon>
+          <div v-else class="d-flex align-center goal-card__metadata-item" style="gap: 6px">
+            <v-icon size="16" :color="categoryColor" class="flex-shrink-0">mdi-calendar</v-icon>
             <span>{{ goal.year }}</span>
           </div>
 
           <!-- Deadline (if present) -->
           <div
             v-if="goal.deadline_date"
-            class="d-flex align-center"
+            class="d-flex align-center goal-card__metadata-item"
             style="gap: 6px"
           >
-            <v-icon size="16" color="warning">mdi-calendar-alert</v-icon>
-            <span>{{ formatDate(goal.deadline_date) }}</span>
+            <v-icon size="16" color="warning" class="flex-shrink-0">mdi-calendar-alert</v-icon>
+            <span class="text-truncate">{{ formatDate(goal.deadline_date) }}</span>
           </div>
         </div>
       </div>
@@ -356,6 +356,15 @@ const milestonesCompleted = computed(() => {
   min-height: 24px;
   display: flex;
   align-items: center;
+}
+
+.goal-card__metadata-item {
+  min-width: 0;
+}
+
+.goal-card__metadata-item .text-truncate {
+  flex: 1;
+  min-width: 0;
 }
 
 .gap-1 {

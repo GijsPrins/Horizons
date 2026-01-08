@@ -365,5 +365,8 @@
     "oct": "Okt",
     "nov": "Nov",
     "dec": "Dec"
+  },
+  "yearReview": {
+    "weeksAchieved": "{count}  van 52 weken behaald"
   }
 }

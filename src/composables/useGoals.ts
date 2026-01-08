@@ -101,7 +101,6 @@ export function useGoals(
         .insert({
           ...goalData,
           user_id: user.value.id,
-          year: resolvedYear.value,
           is_completed: false,
           completed_at: null,
         })

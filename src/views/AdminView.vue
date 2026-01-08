@@ -71,7 +71,7 @@
       </v-row>
 
       <!-- Category Dialog -->
-      <v-dialog v-model="categoryDialogOpen" max-width="600">
+      <v-dialog v-model="categoryDialogOpen" max-width="600" :fullscreen="$vuetify.display.mobile">
         <v-card>
           <v-card-title>
             {{
@@ -469,6 +469,19 @@ async function handleDeleteCategory() {
   gap: 8px;
   max-height: 350px;
   overflow-y: auto;
+}
+
+@media (max-width: 600px) {
+  .icon-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    max-height: 300px;
+  }
+
+  .icon-option {
+    min-width: 48px !important;
+    height: 48px !important;
+  }
 }
 
 .icon-option {
