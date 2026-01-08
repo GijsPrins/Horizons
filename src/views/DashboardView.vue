@@ -21,6 +21,19 @@
           <div
             class="d-flex align-center flex-grow-1 flex-sm-grow-0 justify-end gap-2"
           >
+            <!-- Search -->
+            <v-text-field
+              v-model="searchQuery"
+              :label="$t('common.search')"
+              prepend-inner-icon="mdi-magnify"
+              density="compact"
+              hide-details
+              variant="outlined"
+              style="min-width: 150px; max-width: 250px"
+              class="flex-grow-1"
+              clearable
+            />
+
             <!-- Team selector -->
             <v-select
               v-if="teams && teams.length > 0"
@@ -126,13 +139,18 @@
         border
       >
         <v-icon size="64" color="primary" class="mb-4">mdi-target</v-icon>
-        <h2 class="text-h6 mb-2">{{ $t("goals.noGoals") }}</h2>
+        <h2 class="text-h6 mb-2">
+          {{ searchQuery ? $t("common.noResults", "Geen resultaten gevonden") : $t("goals.noGoals") }}
+        </h2>
         <p class="text-body-2 text-medium-emphasis mb-4">
-          {{ $t("goals.createFirst", { year: currentYear }) }}
+          {{ searchQuery ? $t("common.tryDifferentSearch", "Probeer een andere zoekterm") : $t("goals.createFirst", { year: currentYear }) }}
         </p>
-        <v-btn color="primary" @click="openGoalDialog()">
+        <v-btn v-if="!searchQuery" color="primary" @click="openGoalDialog()">
           <v-icon start>mdi-plus</v-icon>
           {{ $t("goals.addGoal") }}
+        </v-btn>
+        <v-btn v-else variant="text" @click="searchQuery = ''">
+          {{ $t("common.clearSearch", "Zoekopdracht wissen") }}
         </v-btn>
       </v-card>
 
@@ -234,6 +252,7 @@ const { categories } = useCategories(selectedTeamId);
 
 // UI state
 const selectedCategoryId = ref<string | null>(null);
+const searchQuery = ref("");
 const goalDialogOpen = ref(false);
 const editingGoal = ref<Goal | null>(null);
 
@@ -254,6 +273,7 @@ const { filter, sort, filteredGoals } = useDashboardFilters(
   goals,
   userId,
   selectedCategoryId,
+  searchQuery,
 );
 
 // Filter and sort options
