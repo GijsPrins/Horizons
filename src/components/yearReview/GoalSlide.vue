@@ -8,11 +8,7 @@
     />
 
     <!-- Content card -->
-    <v-card
-      class="goal-slide__card mx-auto"
-      max-width="700"
-      elevation="24"
-    >
+    <v-card class="goal-slide__card mx-auto" max-width="700" elevation="24">
       <!-- Trophy icon -->
       <div class="text-center pt-8 pb-4">
         <v-icon size="80" color="amber-darken-1" class="trophy-icon">
@@ -23,51 +19,69 @@
       <!-- Goal title -->
       <v-card-title
         class="text-center font-weight-bold px-8 pb-2 goal-title"
-        :class="goal.title.length > 50 ? 'text-h5' : goal.title.length > 30 ? 'text-h4' : 'text-h3'"
+        :class="
+          goal.title.length > 50
+            ? 'text-h5'
+            : goal.title.length > 30
+              ? 'text-h4'
+              : 'text-h3'
+        "
       >
         {{ goal.title }}
       </v-card-title>
 
       <!-- Description -->
-      <v-card-text v-if="goal.description" class="text-h6 text-center text-medium-emphasis px-8">
+      <v-card-text
+        v-if="goal.description"
+        class="text-h6 text-center text-medium-emphasis px-8"
+      >
         {{ goal.description }}
       </v-card-text>
 
       <!-- Weekly progress badge -->
-      <div v-if="goal.goal_type === 'weekly'" class="d-flex justify-center py-2">
+      <div
+        v-if="goal.goal_type === 'weekly'"
+        class="d-flex justify-center py-2"
+      >
         <v-chip size="large" color="success" variant="tonal">
           <v-icon start>mdi-calendar-check</v-icon>
-          {{ weeksAchieved }} van 52 weken behaald
+          {{ $t("yearReview.weeksAchieved", { count: weeksAchieved }) }}
         </v-chip>
       </div>
 
       <!-- Category chip -->
       <div v-if="goal.category" class="d-flex justify-center py-4">
-        <v-chip
-          size="large"
-          :color="goal.category.color"
-          variant="flat"
-        >
+        <v-chip size="large" :color="goal.category.color" variant="flat">
           <v-icon start>{{ goal.category.icon }}</v-icon>
           {{ goal.category.name }}
         </v-chip>
       </div>
 
       <!-- Creator info -->
-      <div class="d-flex justify-center align-center pb-8 pt-4" style="gap: 16px">
+      <div
+        class="d-flex justify-center align-center pb-8 pt-4"
+        style="gap: 16px"
+      >
         <v-avatar size="56" :color="goal.category?.color || 'primary'">
-          <v-img v-if="goal.profile?.avatar_url" :src="goal.profile.avatar_url" />
+          <v-img
+            v-if="goal.profile?.avatar_url"
+            :src="goal.profile.avatar_url"
+          />
           <span v-else class="text-white text-h5">
-            {{ goal.profile?.display_name?.charAt(0)?.toUpperCase() || '?' }}
+            {{ goal.profile?.display_name?.charAt(0)?.toUpperCase() || "?" }}
           </span>
         </v-avatar>
         <div>
           <div class="text-h6 font-weight-medium">
-            {{ goal.profile?.display_name || 'Onbekend' }}
+            {{ goal.profile?.display_name || "Onbekend" }}
           </div>
           <div class="text-body-2 text-medium-emphasis">
             <template v-if="goal.completed_at">
-              {{ $t('yearReview.completedOn', { date: formatDate(goal.completed_at) }) }}
+              {{
+                $t("yearReview.completedOn", {
+                  date: formatDate(goal.completed_at),
+                })
+              }}
             </template>
             <template v-else>
               {{ goal.year }}
@@ -80,27 +94,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { GoalWithRelations } from '@/types/database'
-import { formatDate } from '@/utils/format'
+import { computed } from "vue";
+import type { GoalWithRelations } from "@/types/database";
+import { formatDate } from "@/utils/format";
 
 const props = defineProps<{
-  goal: GoalWithRelations
-}>()
+  goal: GoalWithRelations;
+}>();
 
 // Get first image attachment as background
 const backgroundImage = computed(() => {
   const imageAttachment = props.goal.attachments?.find(
-    a => a.type === 'image' && a.url
-  )
-  return imageAttachment?.url
-})
+    (a) => a.type === "image" && a.url,
+  );
+  return imageAttachment?.url;
+});
 
 // Count achieved weeks for weekly goals
 const weeksAchieved = computed(() => {
-  if (props.goal.goal_type !== 'weekly') return 0
-  return props.goal.progress_entries?.filter(e => e.achieved).length ?? 0
-})
+  if (props.goal.goal_type !== "weekly") return 0;
+  return props.goal.progress_entries?.filter((e) => e.achieved).length ?? 0;
+});
 </script>
 
 <style scoped>
