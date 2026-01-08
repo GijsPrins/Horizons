@@ -179,7 +179,8 @@ function handleClick(week: number) {
 
 .weekly-grid__weeks {
   display: grid;
-  grid-template-columns: repeat(13, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  grid-auto-flow: column;
   gap: 4px;
 }
 
