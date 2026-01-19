@@ -174,6 +174,7 @@
         :goal="editingGoal"
         :team-id="selectedTeamId || ''"
         :categories="categories || []"
+        :loading="isGoalSubmitting"
         @submit="handleGoalSubmit"
       />
     </v-container>
@@ -240,6 +241,8 @@ const {
   isLoading: goalsLoading,
   createGoal,
   updateGoal,
+  isCreating,
+  isUpdating,
 } = useGoals(selectedTeamId, currentYear);
 
 // Re-fetch when team or year changes
@@ -264,6 +267,10 @@ const isLoading = computed(() => {
   // If no team selected, only show loading for teams
   return teamsLoading.value;
 });
+
+const isGoalSubmitting = computed(
+  () => isCreating.value || isUpdating.value
+);
 
 // Extract user ID for filters
 const userId = computed(() => user.value?.id);

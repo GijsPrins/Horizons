@@ -37,8 +37,27 @@
               :rules="[rules.required]"
               :error-messages="passwordError"
               autocomplete="current-password"
-              class="mb-4"
+              class="mb-2"
             />
+            
+            <div class="d-flex justify-end mb-4">
+              <router-link
+                :to="{ name: 'forgot-password' }"
+                class="text-caption text-primary"
+              >
+                {{ $t('auth.forgotPassword') }}
+              </router-link>
+            </div>
+
+            <!-- Captcha -->
+            <div class="mb-4 d-flex justify-center">
+               <vue-turnstile 
+                 ref="turnstile" 
+                 :site-key="siteKey" 
+                 v-model="captchaToken" 
+                 @error="onCaptchaError"
+               />
+            </div>
 
             <v-btn
               type="submit"
@@ -83,6 +102,7 @@
 
 <script setup lang="ts">
 import { ref, inject } from 'vue'
+import VueTurnstile from 'vue-turnstile'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
@@ -94,10 +114,13 @@ const { login, loading } = useAuth()
 const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
 
 const logoPath = `${import.meta.env.BASE_URL}favicon.png`
+const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || ''
 
+const turnstile = ref()
 const formRef = ref()
 const email = ref('')
 const password = ref('')
+const captchaToken = ref('')
 const showPassword = ref(false)
 const error = ref('')
 const emailError = ref('')
@@ -112,8 +135,13 @@ async function handleLogin() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
+  if (!captchaToken.value) {
+     error.value = "Please complete the captcha"
+     return
+  }
+
   error.value = ''
-  const result = await login(email.value, password.value)
+  const result = await login(email.value, password.value, captchaToken.value)
 
   if (result.success) {
     showSnackbar?.(t('auth.loginSuccess'), 'success')
@@ -121,6 +149,14 @@ async function handleLogin() {
     router.push(redirect || { name: 'dashboard' })
   } else {
     error.value = result.error || t('auth.errors.loginFailed')
+    // Reset captcha on failure as the token is single-use
+    captchaToken.value = ''
+    turnstile.value?.reset()
   }
 }
+
+function onCaptchaError() {
+  error.value = "Captcha configuration error. Please refresh or contact support."
+}
+
 </script>

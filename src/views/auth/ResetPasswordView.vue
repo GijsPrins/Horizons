@@ -10,31 +10,12 @@
             </v-avatar>
             <h1 class="text-h4 font-weight-bold mt-2">{{ $t('app.name') }}</h1>
             <p class="text-body-2 text-medium-emphasis">
-              {{ $t('auth.createAccount') }}
+              {{ $t('auth.resetPasswordTitle') }}
             </p>
           </div>
 
-          <!-- Register Form -->
-          <v-form @submit.prevent="handleRegister" ref="formRef">
-            <v-text-field
-              v-model="displayName"
-              :label="$t('auth.displayName')"
-              prepend-inner-icon="mdi-account"
-              :rules="[rules.required, rules.minLength]"
-              autocomplete="name"
-              class="mb-2"
-            />
-
-            <v-text-field
-              v-model="email"
-              :label="$t('auth.email')"
-              type="email"
-              prepend-inner-icon="mdi-email"
-              :rules="[rules.required, rules.email]"
-              autocomplete="email"
-              class="mb-2"
-            />
-
+          <!-- Form -->
+          <v-form @submit.prevent="handleReset" ref="formRef">
             <v-text-field
               v-model="password"
               :label="$t('auth.password')"
@@ -57,11 +38,6 @@
               class="mb-4"
             />
 
-            <!-- Captcha -->
-            <div class="mb-4 d-flex justify-center">
-               <vue-turnstile ref="turnstile" :site-key="siteKey" v-model="captchaToken" />
-            </div>
-
             <v-btn
               type="submit"
               color="primary"
@@ -69,7 +45,7 @@
               block
               :loading="loading"
             >
-              {{ $t('auth.register') }}
+              {{ $t('auth.setNewPassword') }}
             </v-btn>
           </v-form>
 
@@ -84,19 +60,6 @@
           >
             {{ error }}
           </v-alert>
-
-          <!-- Login link -->
-          <div class="text-center mt-6">
-            <span class="text-body-2 text-medium-emphasis">
-              {{ $t('auth.hasAccount') }}
-            </span>
-            <router-link
-              :to="{ name: 'login' }"
-              class="text-primary font-weight-medium ml-1"
-            >
-              {{ $t('auth.login') }}
-            </router-link>
-          </div>
         </v-card>
       </v-col>
     </v-row>
@@ -105,57 +68,43 @@
 
 <script setup lang="ts">
 import { ref, inject } from 'vue'
-import VueTurnstile from 'vue-turnstile'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuth } from '@/composables/useAuth'
 
 const router = useRouter()
 const { t } = useI18n()
-const { register, loading } = useAuth()
+const { updateUser, loading } = useAuth()
 const showSnackbar = inject<(msg: string, color?: string) => void>('showSnackbar')
 
 const logoPath = `${import.meta.env.BASE_URL}favicon.png`
-const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || ''
 
-const turnstile = ref()
 const formRef = ref()
-const displayName = ref('')
-const email = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
-const captchaToken = ref('')
 const showPassword = ref(false)
 const error = ref('')
 
 const rules = {
   required: (v: string) => !!v || t('common.required'),
-  minLength: (v: string) => v.length >= 2 || t('auth.errors.minLength', { n: 2 }),
-  email: (v: string) => /.+@.+\..+/.test(v) || t('auth.errors.invalidEmail'),
   password: (v: string) => v.length >= 10 || t('auth.errors.invalidPassword'),
   passwordMatch: (v: string) => v === password.value || t('auth.errors.passwordMismatch')
 }
 
-async function handleRegister() {
+async function handleReset() {
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
-  if (!captchaToken.value) {
-     error.value = "Please complete the captcha"
-     return
-  }
-
   error.value = ''
-  const result = await register(email.value, password.value, displayName.value, captchaToken.value)
+  
+  // When a user lands here via email link, they are already authenticated via the access token in URL fragment
+  const result = await updateUser({ password: password.value })
 
   if (result.success) {
-    showSnackbar?.(t('auth.registerSuccess'), 'success')
-    router.push({ name: 'teams' })
+    showSnackbar?.(t('auth.passwordUpdated'), 'success')
+    router.push({ name: 'dashboard' })
   } else {
-    error.value = result.error || t('auth.errors.registerFailed')
-    // Reset captcha on failure as the token is single-use
-    captchaToken.value = ''
-    turnstile.value?.reset()
+    error.value = result.error || t('common.error')
   }
 }
 </script>

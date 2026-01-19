@@ -10,7 +10,13 @@ import { useAuth } from "./composables/useAuth";
 const { initialize } = useAuth();
 
 async function bootstrap() {
-  await initialize();
+  try {
+    await initialize();
+  } catch (error) {
+    console.error("Failed to initialize auth:", error);
+    // Continue rendering even if auth fails, the router guards will handle the rest
+    // or the app will show a restricted state
+  }
 
   const app = createApp(App);
 
