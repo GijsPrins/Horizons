@@ -103,12 +103,15 @@ export function useAuth() {
   }
 
   // Login with email/password
-  async function login(email: string, password: string) {
+  async function login(email: string, password: string, captchaToken?: string) {
     loading.value = true;
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
+        options: {
+          captchaToken,
+        },
       });
 
       if (error) throw error;
@@ -122,7 +125,23 @@ export function useAuth() {
 
       return { success: true };
     } catch (error: any) {
-      return { success: false, error: error.message };
+      // Security: Check for rate limits vs generic auth errors
+      if (
+        error.message?.includes("Too many requests") ||
+        error.status === 429
+      ) {
+        return {
+          success: false,
+          error: "Too many login attempts. Please try again later.",
+        };
+      }
+      
+      // Security: Mask specific errors to prevent user enumeration
+      // Don't reveal if user exists or not
+      return {
+        success: false,
+        error: "Invalid email or password.",
+      };
     } finally {
       loading.value = false;
     }
@@ -133,6 +152,7 @@ export function useAuth() {
     email: string,
     password: string,
     displayName: string,
+    captchaToken?: string,
   ) {
     loading.value = true;
     try {
@@ -143,6 +163,7 @@ export function useAuth() {
           data: {
             display_name: displayName,
           },
+          captchaToken,
         },
       });
 
@@ -253,6 +274,55 @@ export function useAuth() {
     }
   }
 
+  // Reset password (send email)
+  async function resetPassword(email: string, captchaToken?: string) {
+    loading.value = true;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/#/reset-password`,
+        captchaToken, // Only if captcha is enabled for recovery too
+      });
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      // Security: Don't reveal if user exists
+      if (
+        error.message?.includes("Too many requests") ||
+        error.status === 429
+      ) {
+        return {
+          success: false,
+          error: "Too many attempts. Please try again later.",
+        };
+      }
+      return { success: true }; // Always return success to prevent enumeration
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  // Update user (auth) data like password
+  async function updateUser(updates: { password?: string; email?: string }) {
+    loading.value = true;
+    try {
+      const { data, error } = await supabase.auth.updateUser(updates);
+
+      if (error) throw error;
+
+      if (data.user) {
+        user.value = data.user;
+        session.value = data.session; // Session might rotate
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    } finally {
+      loading.value = false;
+    }
+  }
+
   return {
     user,
     session,
@@ -266,6 +336,8 @@ export function useAuth() {
     login,
     register,
     logout,
+    resetPassword,
+    updateUser,
     updateProfile,
     uploadAvatar,
     fetchProfile,

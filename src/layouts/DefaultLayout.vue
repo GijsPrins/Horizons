@@ -125,12 +125,13 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
 import { useAuth } from '@/composables/useAuth'
 
 const { isAuthenticated, isAdmin, profile, logout } = useAuth()
 const route = useRoute()
+const router = useRouter()
 const { mobile } = useDisplay()
 
 const logoPath = `${import.meta.env.BASE_URL}favicon.png`
@@ -147,6 +148,7 @@ watch(() => route.path, () => {
 
 async function handleLogout() {
   await logout()
+  router.push({ name: 'login' })
 }
 </script>
 

@@ -159,7 +159,7 @@
         <v-btn
           color="primary"
           variant="flat"
-          :loading="isSubmitting"
+          :loading="loading"
           @click="handleSubmit"
         >
           {{ isEditing ? $t("common.save") : $t("common.create") }}
@@ -180,6 +180,7 @@ const props = defineProps<{
   goal?: Goal | null;
   teamId: string;
   categories: Category[];
+  loading?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -190,7 +191,6 @@ inject<(msg: string, color?: string) => void>("showSnackbar");
 const { t } = useI18n();
 
 const formRef = ref();
-const isSubmitting = ref(false);
 
 const isEditing = computed(() => !!props.goal);
 
@@ -244,7 +244,7 @@ const rules = {
   positiveNumber: (v: number) => v > 0 || t("common.positiveNumber"),
 };
 
-// Reset form when dialog opens/closes
+// Reset form when dialog opens
 watch(isOpen, (open) => {
   if (open) {
     if (props.goal) {
@@ -270,9 +270,6 @@ watch(isOpen, (open) => {
       form.deadline_date = null;
       form.file = null;
     }
-  } else {
-    // Dialog closed - reset submitting state
-    isSubmitting.value = false;
   }
 });
 
@@ -284,7 +281,6 @@ async function handleSubmit() {
   const { valid } = await formRef.value.validate();
   if (!valid) return;
 
-  isSubmitting.value = true;
   emit("submit", {
     ...form,
     team_id: props.teamId,

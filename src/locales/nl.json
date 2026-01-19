@@ -35,14 +35,22 @@
     "logoutSuccess": "Tot ziens!",
     "errors": {
       "invalidEmail": "Ongeldig e-mailadres",
-      "invalidPassword": "Wachtwoord moet minimaal 6 tekens bevatten",
+      "invalidPassword": "Wachtwoord moet minimaal 10 tekens bevatten",
       "passwordMismatch": "Wachtwoorden komen niet overeen",
       "loginFailed": "Inloggen mislukt. Controleer je gegevens.",
       "registerFailed": "Registreren mislukt. Probeer het opnieuw.",
       "minLength": "Minimaal {n} tekens",
-      "notAuthenticated": "Niet geauthenticeerd"
+      "notAuthenticated": "Niet geauthenticeerd",
+      "resetPasswordSuccess": "Indien dit e-mailadres bekend is, heb je een e-mail ontvangen om je wachtwoord te herstellen."
     },
-    "createAccount": "Maak een account aan"
+    "createAccount": "Maak een account aan",
+    "forgotPasswordTitle": "Wachtwoord herstellen",
+    "resetPasswordTitle": "Nieuw wachtwoord instellen",
+    "sendResetLink": "Verstuur herstellink",
+    "setNewPassword": "Stel wachtwoord in",
+    "passwordUpdated": "Wachtwoord succesvol gewijzigd!",
+    "backToLogin": "Terug naar inloggen",
+    "enterEmail": "Vul je e-mailadres in om je wachtwoord te herstellen."
   },
   "goals": {
     "title": "Doelen",
