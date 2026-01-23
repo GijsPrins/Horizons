@@ -63,17 +63,18 @@ export function useTeams() {
       if (!user.value) throw new Error('Not authenticated')
 
       // Create team
-      const { data: team, error: teamError } = await supabase
+      const response = await supabase
         .from('teams')
         .insert({
           name: formData.name,
           description: formData.description || null,
           invite_code: generateInviteCode()
         })
-        .select()
-        .single()
+        .select();
 
-      if (teamError) throw teamError
+      if (response.error) throw response.error;
+      const team = response.data?.[0];
+      if (!team) throw new Error('Failed to create team');
 
       // Add creator as admin
       const { error: memberError } = await supabase
@@ -99,13 +100,13 @@ export function useTeams() {
       if (!user.value) throw new Error('Not authenticated')
 
       // Find team by invite code
-      const { data: team, error: findError } = await supabase
+      const response = await supabase
         .from('teams')
         .select('id')
-        .eq('invite_code', inviteCode.toUpperCase())
-        .single()
+        .eq('invite_code', inviteCode.toUpperCase());
 
-      if (findError) throw new Error('Ongeldige uitnodigingscode')
+      const team = response.data?.[0];
+      if (!team || response.error) throw new Error('Ongeldige uitnodigingscode');
 
       // Check if already member
       const { data: existing } = await supabase
@@ -196,7 +197,7 @@ export function useTeam(teamId: string) {
   const teamQuery = useQuery({
     queryKey: ['team', teamId],
     queryFn: async (): Promise<TeamWithMembers | null> => {
-      const { data, error } = await supabase
+      const response = await supabase
         .from('teams')
         .select(`
           *,
@@ -205,11 +206,12 @@ export function useTeam(teamId: string) {
             profile:profiles(*)
           )
         `)
-        .eq('id', teamId)
-        .single()
+        .eq('id', teamId);
 
-      if (error) throw error
-      return data as TeamWithMembers
+      if (response.error) throw response.error;
+      const data = response.data?.[0];
+      if (!data) throw new Error('Team not found');
+      return data as TeamWithMembers;
     },
     enabled: !!teamId
   })

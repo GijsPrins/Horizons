@@ -9,13 +9,14 @@ export function useProgress() {
   // Add progress entry mutation
   const addProgressMutation = useMutation({
     mutationFn: async (entry: Omit<ProgressEntry, "id" | "created_at">) => {
-      const { data, error } = await supabase
+      const response = await supabase
         .from("progress_entries")
         .insert(entry)
-        .select()
-        .single();
+        .select();
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      const data = response.data?.[0];
+      if (!data) throw new Error('Failed to create progress entry');
       return data;
     },
     onSuccess: (data) => {
@@ -30,14 +31,15 @@ export function useProgress() {
       id,
       ...updates
     }: Partial<ProgressEntry> & { id: string }) => {
-      const { data, error } = await supabase
+      const response = await supabase
         .from("progress_entries")
         .update(updates)
         .eq("id", id)
-        .select()
-        .single();
+        .select();
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      const data = response.data?.[0];
+      if (!data) throw new Error('Failed to update progress entry');
       return data;
     },
     onSuccess: (data) => {
@@ -50,12 +52,12 @@ export function useProgress() {
   const deleteProgressMutation = useMutation({
     mutationFn: async (entryId: string) => {
       // Get the entry first to know the goal_id
-      const { data: entry } = await supabase
+      const response = await supabase
         .from("progress_entries")
         .select("goal_id")
-        .eq("id", entryId)
-        .single();
+        .eq("id", entryId);
 
+      const entry = response.data?.[0];
       if (!entry) return null;
 
       const { error } = await supabase
@@ -86,27 +88,29 @@ export function useProgress() {
       achieved: boolean;
     }) => {
       // Check if entry exists for this week
-      const { data: existing } = await supabase
+      const existingResponse = await supabase
         .from("progress_entries")
         .select("id")
         .eq("goal_id", goalId)
-        .eq("week_number", weekNumber)
-        .single();
+        .eq("week_number", weekNumber);
+
+      const existing = existingResponse.data?.[0];
 
       if (existing) {
         // Update existing
-        const { data, error } = await supabase
+        const response = await supabase
           .from("progress_entries")
           .update({ achieved })
           .eq("id", existing.id)
-          .select()
-          .single();
+          .select();
 
-        if (error) throw error;
+        if (response.error) throw response.error;
+        const data = response.data?.[0];
+        if (!data) throw new Error('Failed to update week progress');
         return data;
       } else {
         // Create new
-        const { data, error } = await supabase
+        const response = await supabase
           .from("progress_entries")
           .insert({
             goal_id: goalId,
@@ -115,10 +119,11 @@ export function useProgress() {
             achieved,
             note: null,
           })
-          .select()
-          .single();
+          .select();
 
-        if (error) throw error;
+        if (response.error) throw response.error;
+        const data = response.data?.[0];
+        if (!data) throw new Error('Failed to create week progress');
         return data;
       }
     },

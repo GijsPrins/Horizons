@@ -316,6 +316,7 @@ async function handleGoalSubmit(formData: GoalFormData & { team_id: string }) {
     // Close dialog only after successful submission
     goalDialogOpen.value = false;
   } catch (error: any) {
+    console.error('Goal submission error:', error);
     showSnackbar?.(error.message || t("common.error"), "error");
     // Dialog remains open on error so user can retry
   }

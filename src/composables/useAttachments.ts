@@ -12,7 +12,7 @@ export function useAttachments() {
   // Add attachment record to database
   const addAttachmentMutation = useMutation({
     mutationFn: async (formData: AttachmentFormData & { goal_id: string }) => {
-      const { data, error } = await supabase
+      const response = await supabase
         .from('attachments')
         .insert({
           goal_id: formData.goal_id,
@@ -23,9 +23,10 @@ export function useAttachments() {
           milestone_date: formData.milestone_date ?? null
         }) 
         .select()
-        .single()
 
-      if (error) throw error
+      if (response.error) throw response.error
+      const data = response.data?.[0]
+      if (!data) throw new Error('Failed to create attachment')
       return data as Attachment
     },
     onSuccess: (data: Attachment) => {
@@ -74,12 +75,12 @@ export function useAttachments() {
   const deleteAttachmentMutation = useMutation({
     mutationFn: async (attachmentId: string) => {
       // Get the attachment first
-      const { data: attachment } = await supabase
+      const response = await supabase
         .from('attachments')
         .select('*')
         .eq('id', attachmentId)
-        .single()
 
+      const attachment = response.data?.[0]
       if (!attachment) return null
 
       const { error } = await supabase
