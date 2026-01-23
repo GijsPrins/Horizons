@@ -91,31 +91,42 @@ export function useGoals(
   // Create goal mutation
   const createGoalMutation = useMutation({
     mutationFn: async (formData: GoalFormData & { team_id: string }) => {
-      if (!user.value) throw new Error(t("auth.errors.notAuthenticated"));
+      if (!user.value) {
+        throw new Error(t("auth.errors.notAuthenticated"));
+      }
 
       const { file, ...goalData } = formData;
 
       // 1. Create the goal
-      const { data: goal, error } = await supabase
+      const insertData = {
+        ...goalData,
+        user_id: user.value.id,
+        is_completed: false,
+        completed_at: null,
+      };
+      
+      // Don't use .single() - it causes PGRST116 errors if RLS prevents the SELECT
+      const response = await supabase
         .from("goals")
-        .insert({
-          ...goalData,
-          user_id: user.value.id,
-          is_completed: false,
-          completed_at: null,
-        })
-        .select()
-        .single();
+        .insert(insertData)
+        .select();
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      
+      const goal = response.data?.[0];
+      if (!goal) {
+        throw new Error('Goal creation failed - please try again');
+      }
 
       // 2. If there's a file, upload it using the shared logic
-      if (file && goal) {
+      // Handle Vuetify's v-file-input which returns an array
+      const actualFile = Array.isArray(file) ? file[0] : file;
+      if (actualFile && goal) {
         try {
           await uploadFile({
             goal_id: goal.id,
-            file: file,
-            title: file.name,
+            file: actualFile,
+            title: actualFile.name,
           });
         } catch (uploadErr) {
           console.error("Initial file upload failed:", uploadErr);
@@ -142,22 +153,28 @@ export function useGoals(
       // Omit read-only fields that might be in updates
       const { created_at, user_id, ...validUpdates } = goalUpdates;
 
-      const { data: goal, error } = await supabase
+      const response = await supabase
         .from("goals")
         .update(validUpdates)
         .eq("id", id)
-        .select()
-        .single();
+        .select();
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      
+      const goal = response.data?.[0];
+      if (!goal) {
+        throw new Error('Goal update failed - goal not found');
+      }
 
       // If there's a file, upload it using the shared logic
-      if (file && goal) {
+      // Handle Vuetify's v-file-input which returns an array
+      const actualFile = Array.isArray(file) ? file[0] : file;
+      if (actualFile && goal) {
         try {
           await uploadFile({
             goal_id: goal.id,
-            file: file,
-            title: file.name,
+            file: actualFile,
+            title: actualFile.name,
           });
         } catch (uploadErr) {
           console.error("File upload during update failed:", uploadErr);
@@ -197,17 +214,21 @@ export function useGoals(
       is_completed: boolean;
       date?: string;
     }) => {
-      const { data, error } = await supabase
+      const response = await supabase
         .from("goals")
         .update({
           is_completed,
           completed_at: is_completed ? date || new Date().toISOString() : null,
         })
         .eq("id", id)
-        .select()
-        .single();
+        .select();
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      
+      const data = response.data?.[0];
+      if (!data) {
+        throw new Error('Goal toggle failed - goal not found');
+      }
       return data;
     },
     onSuccess: (data) => {
@@ -222,18 +243,22 @@ export function useGoals(
       if (!user.value) throw new Error(t("auth.errors.notAuthenticated"));
 
       // Fetch the original goal with all its data
-      const { data: originalGoal, error: fetchError } = await supabase
+      const fetchResponse = await supabase
         .from("goals")
         .select("*")
-        .eq("id", goalId)
-        .single();
+        .eq("id", goalId);
 
-      if (fetchError) throw fetchError;
+      if (fetchResponse.error) throw fetchResponse.error;
+      
+      const originalGoal = fetchResponse.data?.[0];
+      if (!originalGoal) {
+        throw new Error('Original goal not found');
+      }
 
       const nextYear = originalGoal.year + 1;
 
       // Create a new goal with the same properties but for the next year
-      const { data: newGoal, error: createError } = await supabase
+      const createResponse = await supabase
         .from("goals")
         .insert({
           user_id: originalGoal.user_id,
@@ -249,10 +274,14 @@ export function useGoals(
           completed_at: null,
           deadline_date: originalGoal.deadline_date,
         })
-        .select()
-        .single();
+        .select();
 
-      if (createError) throw createError;
+      if (createResponse.error) throw createResponse.error;
+      
+      const newGoal = createResponse.data?.[0];
+      if (!newGoal) {
+        throw new Error('Goal copy failed');
+      }
 
       return { newGoal, nextYear };
     },
@@ -296,7 +325,7 @@ export function useGoal(goalId: string) {
   const goalQuery = useQuery({
     queryKey: ["goal", goalId],
     queryFn: async (): Promise<GoalWithRelations | null> => {
-      const { data, error } = await supabase
+      const response = await supabase
         .from("goals")
         .select(
           `
@@ -307,10 +336,14 @@ export function useGoal(goalId: string) {
           attachments(*)
         `,
         )
-        .eq("id", goalId)
-        .single();
+        .eq("id", goalId);
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      
+      const data = response.data?.[0];
+      if (!data) {
+        throw new Error('Goal not found');
+      }
       return data as GoalWithRelations;
     },
     enabled: !!goalId,

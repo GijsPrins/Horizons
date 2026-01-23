@@ -53,7 +53,7 @@ export function useCategories(teamId?: MaybeRefOrGetter<string | undefined>) {
     mutationFn: async (
       formData: CategoryFormData & { team_id?: string | null },
     ) => {
-      const { data, error } = await supabase
+      const response = await supabase
         .from("categories")
         .insert({
           name: formData.name,
@@ -62,10 +62,11 @@ export function useCategories(teamId?: MaybeRefOrGetter<string | undefined>) {
           sort_order: formData.sort_order,
           team_id: formData.team_id ?? null,
         })
-        .select()
-        .single();
+        .select();
 
-      if (error) throw error;
+      if (response.error) throw response.error;
+      const data = response.data?.[0];
+      if (!data) throw new Error('Failed to create category');
       return data;
     },
     onSuccess: () => {
@@ -102,14 +103,15 @@ export function useCategories(teamId?: MaybeRefOrGetter<string | undefined>) {
         return data;
       } else {
         // Regular update for team categories (RLS handles permission)
-        const { data, error } = await supabase
+        const response = await supabase
           .from("categories")
           .update(updates)
           .eq("id", id)
-          .select()
-          .single();
+          .select();
 
-        if (error) throw error;
+        if (response.error) throw response.error;
+        const data = response.data?.[0];
+        if (!data) throw new Error('Category not found');
         return data;
       }
     },

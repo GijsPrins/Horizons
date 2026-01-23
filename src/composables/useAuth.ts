@@ -67,18 +67,17 @@ export function useAuth() {
 
   // Fetch user profile
   async function fetchProfile(userId: string) {
-    const { data, error } = await supabase
+    const response = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", userId)
-      .single();
+      .eq("id", userId);
 
-    if (error) {
-      console.error("Error fetching profile:", error);
+    if (response.error) {
+      console.error("Error fetching profile:", response.error);
       return;
     }
 
-    profile.value = data;
+    profile.value = response.data?.[0] || null;
   }
 
   // Verify admin status server-side (for critical operations)
