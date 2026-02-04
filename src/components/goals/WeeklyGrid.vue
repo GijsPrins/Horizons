@@ -193,6 +193,7 @@ function handleClick(week: number) {
   justify-content: center;
   transition: all 0.2s ease;
   position: relative;
+  touch-action: manipulation;
 }
 
 .weekly-grid__week--achieved {
