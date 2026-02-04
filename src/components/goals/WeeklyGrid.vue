@@ -13,6 +13,7 @@
         v-for="week in 52"
         :key="week"
         :text="getWeekTooltip(week)"
+        :disabled="mobile"
         location="top"
       >
         <template #activator="{ props }">
@@ -90,6 +91,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import { useDisplay } from "vuetify";
 import type { GoalWithRelations } from "@/types/database";
 import { getCurrentWeekNumber } from "@/composables/useProgress";
 
@@ -103,6 +105,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const { mobile } = useDisplay();
 
 const months = [
   t("date.jan"),
