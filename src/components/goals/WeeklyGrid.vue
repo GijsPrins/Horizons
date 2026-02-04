@@ -197,6 +197,8 @@ function handleClick(week: number) {
   transition: all 0.2s ease;
   position: relative;
   touch-action: manipulation;
+  font-size: 16px; /* Prevent iOS auto-zoom on tap */
+  -webkit-tap-highlight-color: transparent; /* Remove iOS tap highlight */
 }
 
 .weekly-grid__week--achieved {
@@ -222,10 +224,13 @@ function handleClick(week: number) {
   cursor: pointer;
 }
 
-.weekly-grid__week--clickable:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+/* Only apply hover effects on devices that support hover (not touch devices) */
+@media (hover: hover) and (pointer: fine) {
+  .weekly-grid__week--clickable:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+  }
 }
 
 .weekly-grid__legend {
