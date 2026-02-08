@@ -138,9 +138,10 @@ export function useGoalViewLogic(
   async function updateMilestone(
     entryId: string,
     note: string,
+    date: string,
     refetch: () => void,
   ) {
-    await updateProgress({ id: entryId, note });
+    await updateProgress({ id: entryId, note, entry_date: date });
     refetch();
   }
 

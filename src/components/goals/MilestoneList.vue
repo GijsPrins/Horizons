@@ -33,6 +33,30 @@
             @keyup.enter="saveEdit(entry.id)"
             @keyup.esc="cancelEdit"
           />
+          
+          <v-menu
+            v-model="dateMenuOpen"
+            :close-on-content-click="false"
+            location="bottom end"
+          >
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                icon="mdi-calendar"
+                variant="text"
+                size="small"
+                :color="editDate ? 'primary' : undefined"
+                class="mr-1"
+              />
+            </template>
+            <v-date-picker
+              v-model="editDate"
+              color="primary"
+              hide-header
+              @update:model-value="dateMenuOpen = false"
+            />
+          </v-menu>
+
           <v-btn
             icon="mdi-check"
             variant="text"
@@ -145,7 +169,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   add: [note: string, achieved: boolean];
   toggle: [entryId: string, achieved: boolean];
-  update: [entryId: string, note: string];
+  update: [entryId: string, note: string, date: string];
   delete: [entryId: string];
 }>();
 
@@ -153,6 +177,8 @@ const newMilestone = ref("");
 const achieveImmediately = ref(true);
 const editingId = ref<string | null>(null);
 const editNote = ref("");
+const editDate = ref<Date>(new Date());
+const dateMenuOpen = ref(false);
 
 const allMilestones = computed(() =>
   [...(props.goal.progress_entries || [])].sort(
@@ -181,16 +207,35 @@ function addMilestone() {
 function startEdit(entry: ProgressEntry) {
   editingId.value = entry.id;
   editNote.value = entry.note || "";
+  if (entry.entry_date) {
+    const [y, m, d] = entry.entry_date.split("-").map(Number);
+    if (y !== undefined && m !== undefined && d !== undefined) {
+      editDate.value = new Date(y, m - 1, d);
+    } else {
+      editDate.value = new Date();
+    }
+  } else {
+    editDate.value = new Date();
+  }
 }
 
 function cancelEdit() {
   editingId.value = null;
   editNote.value = "";
+  dateMenuOpen.value = false;
 }
 
 function saveEdit(id: string) {
   if (!editNote.value.trim()) return;
-  emit("update", id, editNote.value.trim());
+  // Adjust date for timezone offset to ensure the date part is correct
+  // However, entry_date is expected as YYYY-MM-DD string typically.
+  // Let's use local YYYY-MM-DD format
+  const year = editDate.value.getFullYear();
+  const month = String(editDate.value.getMonth() + 1).padStart(2, "0");
+  const day = String(editDate.value.getDate()).padStart(2, "0");
+  const dateStr = `${year}-${month}-${day}`;
+  
+  emit("update", id, editNote.value.trim(), dateStr);
   cancelEdit();
 }
 </script>
