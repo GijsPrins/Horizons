@@ -356,6 +356,7 @@
     "copied": "Code gekopieerd!",
     "positiveNumber": "Moet groter dan 0 zijn",
     "invalidUrl": "Ongeldige URL",
+    "invalidUrlProtocol": "Ongeldig protocol. Alleen http:// en https:// zijn toegestaan.",
     "selectFile": "Selecteer een bestand",
     "urlPlaceholder": "https://...",
     "imageUrlPlaceholder": "https://example.com/image.jpg"
