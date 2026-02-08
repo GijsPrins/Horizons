@@ -11,8 +11,13 @@ export function useGoalViewLogic(
 ) {
   const router = useRouter();
   const { t } = useI18n();
-  const { toggleWeek, addProgress, updateProgress, deleteProgress } =
-    useProgress();
+  const {
+    toggleWeek,
+    addProgress,
+    updateProgress,
+    deleteProgress,
+    isAdding: isAddingMilestone,
+  } = useProgress();
   const {
     addAttachment,
     uploadFile,
@@ -251,5 +256,6 @@ export function useGoalViewLogic(
     handleAddAttachment,
     deleteAttachment,
     handleCopyToNextYear,
+    isAddingMilestone,
   };
 }

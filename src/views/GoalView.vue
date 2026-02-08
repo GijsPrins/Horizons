@@ -233,8 +233,10 @@
             </v-card-title>
             <v-card-text>
               <MilestoneList
+                ref="milestoneListRef"
                 :goal="goal"
                 :readonly="!isOwner"
+                :loading="isAddingMilestone"
                 @add="onAddMilestone"
                 @toggle="onToggleMilestone"
                 @update="onUpdateMilestone"
@@ -463,7 +465,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from "vue";
+import { computed, inject, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import DefaultLayout from "@/layouts/DefaultLayout.vue";
@@ -517,7 +519,10 @@ const {
   handleAddAttachment,
   deleteAttachment,
   handleCopyToNextYear,
+  isAddingMilestone,
 } = useGoalViewLogic(showSnackbar);
+
+const milestoneListRef = ref<InstanceType<typeof MilestoneList> | null>(null);
 
 const isOwner = computed(() => goal.value?.user_id === user.value?.id);
 const progress = computed(() =>
@@ -571,8 +576,17 @@ const onAddAttachment = (data: {
 
 const onWeekToggle = (week: number, achieved: boolean) =>
   goal.value && handleWeekToggle(goal.value, week, achieved, refetch);
-const onAddMilestone = (note: string, achieved: boolean) =>
-  goal.value && addMilestone(goal.value, note, achieved, refetch);
+
+const onAddMilestone = async (note: string, achieved: boolean) => {
+  if (!goal.value) return;
+  try {
+    await addMilestone(goal.value, note, achieved, refetch);
+    milestoneListRef.value?.clearInput();
+  } catch (error: any) {
+    showSnackbar?.(error.message || t("common.error"), "error");
+  }
+};
+
 const onToggleMilestone = (id: string, achieved: boolean) =>
   toggleMilestone(id, achieved, refetch);
 const onUpdateMilestone = (id: string, note: string, date: string) =>

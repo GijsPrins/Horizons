@@ -127,6 +127,7 @@
           density="compact"
           hide-details
           class="flex-grow-1 mr-2"
+          :disabled="loading"
           @keyup.enter="addMilestone"
         />
         <v-btn
@@ -134,7 +135,8 @@
           variant="flat"
           icon="mdi-plus"
           size="small"
-          :disabled="!newMilestone.trim()"
+          :disabled="!newMilestone.trim() || loading"
+          :loading="loading"
           @click="addMilestone"
         />
       </div>
@@ -164,6 +166,7 @@ import { formatDate } from "@/utils/format";
 const props = defineProps<{
   goal: GoalWithRelations;
   readonly?: boolean;
+  loading?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -200,9 +203,17 @@ const remainingCount = computed(() => {
 function addMilestone() {
   if (!newMilestone.value.trim()) return;
   emit("add", newMilestone.value.trim(), achieveImmediately.value);
-  newMilestone.value = "";
-  // Keep achieveImmediately as is for next one
+  // Input clearing is now handled by exposed clearInput method
+  // to prevent data loss on error
 }
+
+function clearInput() {
+  newMilestone.value = "";
+}
+
+defineExpose({
+  clearInput,
+});
 
 function startEdit(entry: ProgressEntry) {
   editingId.value = entry.id;
