@@ -145,7 +145,10 @@ const rules = {
   url: (v: string) => {
     if (!v) return true;
     try {
-      new URL(v);
+      const url = new URL(v);
+      if (!['http:', 'https:'].includes(url.protocol.toLowerCase())) {
+        return t("common.invalidUrlProtocol");
+      }
       return true;
     } catch {
       return t("common.invalidUrl");

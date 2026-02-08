@@ -99,14 +99,12 @@ export function useTeams() {
     mutationFn: async (inviteCode: string) => {
       if (!user.value) throw new Error('Not authenticated')
 
-      // Find team by invite code
-      const response = await supabase
-        .from('teams')
-        .select('id')
-        .eq('invite_code', inviteCode.toUpperCase());
+      // Find team by invite code using secure RPC
+      const { data: team, error } = await supabase
+        .rpc('get_team_by_invite_code', { code: inviteCode.toUpperCase() })
+        .maybeSingle();
 
-      const team = response.data?.[0];
-      if (!team || response.error) throw new Error('Ongeldige uitnodigingscode');
+      if (!team || error) throw new Error('Ongeldige uitnodigingscode');
 
       // Check if already member
       const { data: existing } = await supabase
