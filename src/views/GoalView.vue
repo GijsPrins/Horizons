@@ -575,8 +575,8 @@ const onAddMilestone = (note: string, achieved: boolean) =>
   goal.value && addMilestone(goal.value, note, achieved, refetch);
 const onToggleMilestone = (id: string, achieved: boolean) =>
   toggleMilestone(id, achieved, refetch);
-const onUpdateMilestone = (id: string, note: string) =>
-  updateMilestone(id, note, refetch);
+const onUpdateMilestone = (id: string, note: string, date: string) =>
+  updateMilestone(id, note, date, refetch);
 const onDeleteMilestone = (id: string) => deleteMilestone(id, refetch);
 const onCopyToNextYear = () => goal.value && handleCopyToNextYear(goal.value);
 </script>
