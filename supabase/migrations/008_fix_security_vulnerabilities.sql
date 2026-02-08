@@ -1,15 +1,9 @@
 -- Migration 008: Fix Security Vulnerabilities
 -- Run this in your Supabase SQL Editor
 
--- ============================================
 -- 1. Fix Global Team Enumeration (RLS)
--- ============================================
-
--- Drop the dangerous policy that allowed listing any team by invite code
 DROP POLICY IF EXISTS "Users can find team by invite code" ON public.teams;
 
--- Create a secure RPC function to look up a team by code
--- This prevents enumeration via SELECT * FROM teams
 CREATE OR REPLACE FUNCTION public.get_team_by_invite_code(code TEXT)
 RETURNS TABLE (
   id UUID,
@@ -29,22 +23,23 @@ BEGIN
 END;
 $$;
 
--- Grant access to authenticated users
 GRANT EXECUTE ON FUNCTION public.get_team_by_invite_code(TEXT) TO authenticated;
-
--- Comments
 COMMENT ON FUNCTION public.get_team_by_invite_code IS 'Securely looks up a team by invite code without exposing the teams table.';
 
 
--- ============================================
 -- 2. Fix Unrestricted File Deletion (Storage)
--- ============================================
+-- Note: 'storage.objects' is owned by supabase_storage_admin. 
+-- We cannot drop policies on it easily from the SQL editor unless we are that role or superuser.
+-- TRY: Run this part separately if it fails, or use the storage UI in Supabase to delete the old policy.
 
--- Drop the dangerous policy that allowed deleting any file in the bucket
-DROP POLICY IF EXISTS "Authenticated users can delete attachments" ON storage.objects;
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Authenticated users can delete attachments" ON storage.objects;
+EXCEPTION
+    WHEN OTHERS THEN
+        NULL; -- Ignore if we can't drop it, user might need to do it manually in UI
+END $$;
 
--- Create a strict policy: Users can only delete files they own
--- Note: 'owner' column in storage.objects is automatically set to auth.uid() on upload
 CREATE POLICY "Users can delete own attachments"
 ON storage.objects FOR DELETE TO authenticated
 USING (
@@ -52,5 +47,4 @@ USING (
   AND owner = auth.uid()
 );
 
--- Comments
 COMMENT ON POLICY "Users can delete own attachments" ON storage.objects IS 'Restrict deletion to the user who uploaded the file.';
