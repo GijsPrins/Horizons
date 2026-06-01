@@ -6,7 +6,7 @@
         <v-btn icon variant="text" @click="$router.back()">
           <v-icon>mdi-arrow-left</v-icon>
         </v-btn>
-        <div class="ml-2">
+        <div class="ml-2 goal-title-container">
           <h1 class="text-h4 font-weight-bold">
             {{ goal?.title || $t("common.loading") }}
           </h1>
@@ -14,7 +14,6 @@
             {{ goal?.category?.name || $t("categories.noCategory") }}
           </p>
         </div>
-        <v-spacer />
 
         <!-- Actions menu -->
         <v-menu v-if="isOwner">
@@ -596,6 +595,13 @@ const onCopyToNextYear = () => goal.value && handleCopyToNextYear(goal.value);
 </script>
 
 <style scoped>
+.goal-title-container {
+  min-width: 0;
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
 @media (max-width: 600px) {
   .goal-actions {
     width: 100%;
