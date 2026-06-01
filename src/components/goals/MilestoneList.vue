@@ -37,7 +37,7 @@
           <v-menu
             v-model="dateMenuOpen"
             :close-on-content-click="false"
-            location="bottom end"
+            location="bottom"
           >
             <template #activator="{ props }">
               <v-btn
@@ -49,12 +49,14 @@
                 class="mr-1"
               />
             </template>
-            <v-date-picker
-              v-model="editDate"
-              color="primary"
-              hide-header
-              @update:model-value="dateMenuOpen = false"
-            />
+            <v-card min-width="320">
+              <v-date-picker
+                :model-value="editDatePickerValue"
+                color="primary"
+                hide-header
+                @update:model-value="onMilestoneDateSelected"
+              />
+            </v-card>
           </v-menu>
 
           <v-btn
@@ -180,8 +182,38 @@ const newMilestone = ref("");
 const achieveImmediately = ref(true);
 const editingId = ref<string | null>(null);
 const editNote = ref("");
-const editDate = ref<Date>(new Date());
+const editDate = ref<string>("");
 const dateMenuOpen = ref(false);
+
+const editDatePickerValue = computed(() => editDate.value || undefined);
+
+function normalizeMilestoneDate(value: unknown): string {
+  if (value === null || value === undefined || value === "") {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  }
+  if (Array.isArray(value)) {
+    return normalizeMilestoneDate(value[0]);
+  }
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return normalizeMilestoneDate(null);
+    return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+  }
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+    const asDate = new Date(trimmed);
+    if (!Number.isNaN(asDate.getTime())) {
+      return `${asDate.getFullYear()}-${String(asDate.getMonth() + 1).padStart(2, "0")}-${String(asDate.getDate()).padStart(2, "0")}`;
+    }
+  }
+  return normalizeMilestoneDate(null);
+}
+
+function onMilestoneDateSelected(value: unknown) {
+  editDate.value = normalizeMilestoneDate(value);
+  dateMenuOpen.value = false;
+}
 
 const allMilestones = computed(() =>
   [...(props.goal.progress_entries || [])].sort(
@@ -218,16 +250,7 @@ defineExpose({
 function startEdit(entry: ProgressEntry) {
   editingId.value = entry.id;
   editNote.value = entry.note || "";
-  if (entry.entry_date) {
-    const [y, m, d] = entry.entry_date.split("-").map(Number);
-    if (y !== undefined && m !== undefined && d !== undefined) {
-      editDate.value = new Date(y, m - 1, d);
-    } else {
-      editDate.value = new Date();
-    }
-  } else {
-    editDate.value = new Date();
-  }
+  editDate.value = normalizeMilestoneDate(entry.entry_date ?? null);
 }
 
 function cancelEdit() {
@@ -238,15 +261,7 @@ function cancelEdit() {
 
 function saveEdit(id: string) {
   if (!editNote.value.trim()) return;
-  // Adjust date for timezone offset to ensure the date part is correct
-  // However, entry_date is expected as YYYY-MM-DD string typically.
-  // Let's use local YYYY-MM-DD format
-  const year = editDate.value.getFullYear();
-  const month = String(editDate.value.getMonth() + 1).padStart(2, "0");
-  const day = String(editDate.value.getDate()).padStart(2, "0");
-  const dateStr = `${year}-${month}-${day}`;
-  
-  emit("update", id, editNote.value.trim(), dateStr);
+  emit("update", id, editNote.value.trim(), editDate.value);
   cancelEdit();
 }
 </script>
