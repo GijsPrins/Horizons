@@ -119,16 +119,45 @@
           />
 
           <!-- Deadline -->
-          <v-text-field
-            v-model="form.deadline_date"
-            :label="$t('goals.deadline')"
-            type="date"
-            prepend-inner-icon="mdi-calendar-alert"
-            clearable
-            class="mb-4"
-            :hint="$t('goals.deadlineHint')"
-            persistent-hint
-          />
+          <v-menu
+            v-model="deadlineMenuOpen"
+            :close-on-content-click="false"
+            location="bottom"
+          >
+            <template #activator="{ props: menuProps }">
+              <v-text-field
+                :model-value="form.deadline_date || ''"
+                :label="$t('goals.deadline')"
+                prepend-inner-icon="mdi-calendar-alert"
+                readonly
+                clearable
+                class="mb-4"
+                :hint="$t('goals.deadlineHint')"
+                persistent-hint
+                v-bind="menuProps"
+                @click:clear="clearDeadline"
+              />
+            </template>
+
+            <v-card min-width="320">
+              <v-date-picker
+                :model-value="pickerDate"
+                color="primary"
+                show-adjacent-months
+                @update:model-value="onDateSelected"
+              />
+              <v-divider />
+              <v-card-actions>
+                <v-spacer />
+                <v-btn variant="text" @click="clearDeadline">
+                  {{ $t("common.clear") }}
+                </v-btn>
+                <v-btn variant="text" @click="deadlineMenuOpen = false">
+                  {{ $t("common.cancel") }}
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-menu>
 
           <!-- Optional Initial Image -->
           <div class="mt-4">
@@ -191,6 +220,7 @@ inject<(msg: string, color?: string) => void>("showSnackbar");
 const { t } = useI18n();
 
 const formRef = ref();
+const deadlineMenuOpen = ref(false);
 
 const isEditing = computed(() => !!props.goal);
 
@@ -244,6 +274,57 @@ const rules = {
   positiveNumber: (v: number) => v > 0 || t("common.positiveNumber"),
 };
 
+const pickerDate = computed(() => form.deadline_date || undefined);
+
+function normalizeDeadlineDate(value: unknown): string | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  if (Array.isArray(value)) {
+    return normalizeDeadlineDate(value[0]);
+  }
+
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    const asDate = new Date(trimmed);
+    if (Number.isNaN(asDate.getTime())) {
+      return null;
+    }
+
+    const year = asDate.getFullYear();
+    const month = String(asDate.getMonth() + 1).padStart(2, "0");
+    const day = String(asDate.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return null;
+}
+
+function onDateSelected(value: unknown) {
+  form.deadline_date = normalizeDeadlineDate(value);
+  deadlineMenuOpen.value = false;
+}
+
+function clearDeadline() {
+  form.deadline_date = null;
+  deadlineMenuOpen.value = false;
+}
+
 // Reset form when dialog opens
 watch(isOpen, (open) => {
   if (open) {
@@ -256,7 +337,7 @@ watch(isOpen, (open) => {
       form.goal_type = props.goal.goal_type;
       form.target_count = props.goal.target_count;
       form.is_shared = props.goal.is_shared;
-      form.deadline_date = props.goal.deadline_date;
+      form.deadline_date = normalizeDeadlineDate(props.goal.deadline_date);
       form.file = null;
     } else {
       // New goal - reset form
@@ -281,8 +362,11 @@ async function handleSubmit() {
   const { valid } = await formRef.value.validate();
   if (!valid) return;
 
+  const normalizedDeadlineDate = normalizeDeadlineDate(form.deadline_date);
+
   emit("submit", {
     ...form,
+    deadline_date: normalizedDeadlineDate,
     team_id: props.teamId,
   });
   // Note: Dialog will be closed by parent after successful submission
